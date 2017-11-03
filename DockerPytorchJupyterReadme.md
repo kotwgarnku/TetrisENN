@@ -2,12 +2,12 @@
 Here is a brief overview about using docker for our project when using ubuntu:
 
 
-1.Install docker following instructions on this site: https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/#docker-ee-customers  
-2.Create work folder somewhere on your PC and run this command in terminal:
+1. Install docker following instructions on this site: https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/#docker-ee-customers  
+2. Create work folder somewhere on your PC and run this command in terminal:
 `sudo chown 1000 /some/host/folder/for/work`  
-3.Run this command in your terminal:
+3. Run this command in your terminal:
 `sudo docker run -it --rm -e NB_UID=1000 -p 8888:8888 -v /some/host/folder/for/work:/home/jovyan/work lampo/tetrisennimage`  
-4.If everything went well you should a message like this in the terminal:  
+4. If everything went well you should have a message like this in the terminal:  
 `Copy/paste this URL into your browser when you connect for the first time,
     to login with a token:
         http://localhost:8888/?token=075c81a1c81baefbc34c7958aec8fd8db65d43f10acfc319
