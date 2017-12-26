@@ -10,12 +10,18 @@ class Genome:
             if len(connection) != 4:
                 raise Exception('Connaction does not contain all necessary informations')
 
-            source_node = self._find_node(connection[0])
-            dest_node = self._find_node(connection[1])
+            source_node_id = connection[0]
+            dest_node_id = connection[1]
+
+            if source_node_id is None or dest_node_id is None:
+                raise Exception('One node is empty')
+
+            source_node = self._find_node(source_node_id)
+            dest_node = self._find_node(dest_node_id)
             if source_node is None:
-                source_node = self._create_new_node(connection[0])
+                source_node = self._create_new_node(source_node_id)
             if dest_node is None:
-                dest_node = self._create_new_node(connection[1])
+                dest_node = self._create_new_node(dest_node_id)
 
             weight = connection[2]
             enabled = connection[3]

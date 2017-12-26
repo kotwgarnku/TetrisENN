@@ -27,9 +27,11 @@ class TestGenomeCase(unittest.TestCase):
         with self.assertRaises(Exception):
             Genome(connections)
 
-    def test_genome_creation(self):
-        connections = [[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]]
-        genome = Genome(connections)
+    def test_genome_creation_with_empty_node(self):
+        with self.assertRaises(Exception):
+            Genome([[1, None, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]])
+
+
 
 
 if __name__ == '__main__':
