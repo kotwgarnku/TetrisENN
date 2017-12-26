@@ -16,6 +16,9 @@ class Genome:
             if source_node_id is None or dest_node_id is None:
                 raise Exception('One node is empty')
 
+            if source_node_id == dest_node_id:
+                raise Exception('ID\'s are equal')
+
             source_node = self._find_node(source_node_id)
             dest_node = self._find_node(dest_node_id)
             if source_node is None:
@@ -42,6 +45,8 @@ class Genome:
         self.node_genes[node_id] = NodeGene(node_id=node_id)
         return self.node_genes[node_id]
 
+    def get_connections(self):
+        return [(s_id, d_id) for s_id, d_id in self.connection_genes.keys()]
 
     def mutate(self):
         pass
