@@ -62,8 +62,11 @@ class Genome:
         self.node_genes[node_id] = NodeGene(node_id=node_id)
         return self.node_genes[node_id]
 
-    def get_connections(self):
+    def get_connections_ids(self):
         return [(s_id, d_id) for s_id, d_id in self.connection_genes.keys()]
+
+    def get_connections(self):
+        return [connection.get_connection() for connection in self.connection_genes.values()]
 
     def get_nodes(self):
         return [node for (key, node) in sorted(self.node_genes.items())]
