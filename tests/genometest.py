@@ -23,23 +23,38 @@ class TestGenomeCase(unittest.TestCase):
             ConnectionGene()
 
     def test_uniqueness_of_connections(self):
-        connections = [[1, 3, 0, True], [1, 3, 0, True]]
+        connections = [[1, 2, 0, True], [1, 2, 0, True]]
         with self.assertRaises(Exception):
-            Genome(connections)
+            Genome(connections, 1, 1)
 
     def test_genome_creation_with_empty_node(self):
         with self.assertRaises(Exception):
-            Genome([[1, None, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]])
+            Genome([[1, None, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 1, 2)
 
     def test_genome_creation_with_loop(self):
         with self.assertRaises(Exception):
-            Genome([[1, 1, 0, True]])
+            Genome([[1, 1, 0, True]], 1, 0)
 
     def test_get_connections(self):
-        genome = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]])
-        genome2 = Genome([[1, 4, 0, True], [1, 2, 0, True], [1, 3, 0, True]])
+        genome = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 2)
+        genome2 = Genome([[1, 4, 0, True], [1, 2, 0, True], [1, 3, 0, True]], 1, 3)
+
         self.assertEqual(genome.get_connections(), [(1, 3), (1, 4), (2, 3), (2, 4)])
         self.assertEqual(genome2.get_connections(), [(1, 4), (1, 2), (1, 3)])
+
+    def test_get_nodes(self):
+        genome = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        nodes = genome.get_nodes()
+        self.assertEqual(nodes[0].node_type, 'input')
+        self.assertEqual(nodes[0].node_id, 1)
+        self.assertEqual(nodes[1].node_type, 'input')
+        self.assertEqual(nodes[1].node_id, 2)
+        self.assertEqual(nodes[2].node_type, 'hidden')
+        self.assertEqual(nodes[2].node_id, 3)
+        self.assertEqual(nodes[3].node_type, 'output')
+        self.assertEqual(nodes[3].node_id, 4)
+
+
 
 if __name__ == '__main__':
     firstSuite = unittest.TestLoader().loadTestsFromTestCase(TestGenomeCase)
