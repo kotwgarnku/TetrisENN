@@ -11,6 +11,7 @@ class NeuralNetwork:
         self._output_neurons = {}
 
     def generate_network(self, genome, input_size, output_size):
+        self.clean_network()
         self._input_size = input_size
         self._output_size = output_size
         self.connectionss = sorted(genome.get_connections())
@@ -26,14 +27,38 @@ class NeuralNetwork:
         for index in range(1, input_size + 1):
             self._input_neurons[index] = self._neurons[index]
 
-        for index in range(input_size + 1, len(self._neurons)):
+        for index in range(input_size + 1, self._input_size + self._output_size + 1):
             self._output_neurons[index] = self._neurons[index]
 
-    def forward(self, input=[]):
-        if(len(input) != self._input_size):
-            raise Exception("Expected {!s} inputs, got {!s} instead".format(self._input_size, len(input)))
-        connections = sorted(self._connections)
+    def clean_network(self):
+        self._connections = {}
+        self._neurons = {}
+        self._input_size = 0
+        self._output_size = 0
+        self._input_neurons = {}
+        self._output_neurons = {}
 
+    def forward(self, inp):
+        if len(inp) != self._input_size:
+            raise Exception("Expected {!s} inputs, got {!s} instead".format(self._input_size, len(inp)))
+        for index in range(1, self._input_size + 1):
+            self._input_neurons[index].take_input_signal(inp[index-1])
+
+        connections = sorted(self._connections.items())
+        for connection in connections:
+            source_id = connection[0][0]
+            destination_id = connection[0][1]
+            output_signal = self._neurons[source_id].fire()
+            connection_value = output_signal * connection[1]
+            self._neurons[destination_id].take_input_signal(connection_value)
+
+        for output_neuron in self._output_neurons.values():
+            output_neuron.fire()
+
+        y = []
+        for index in range(self._input_size + 1, self._input_size + self._output_size + 1):
+            y.append(self._output_neurons[index].get_output_signal())
+        return y
 
 
 class Neuron:
