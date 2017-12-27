@@ -71,6 +71,48 @@ class NeuronTestCase(unittest.TestCase):
             nn.forward([1])
         self.assertEqual(str(e.exception), "Expected 2 inputs, got 1 instead")
 
+    def test_input_neurons_have_input_signal(self):
+        genome = GenomeMock([(2, 4, 0, True), (1, 3, 0, True), (2, 3, 0, True), (1, 4, 0, True)])
+        nn = NeuralNetwork()
+        nn.generate_network(genome, 2, 2)
+        nn.forward([3, 22])
+        self.assertEqual(nn._input_neurons[1]._input_signals, [3])
+        self.assertEqual(nn._input_neurons[2]._input_signals, [22])
+
+    def test_easy_forward_propagation(self):
+        genome = GenomeMock([(2, 4, 0, True), (1, 3, 0, True), (2, 3, 0, True), (1, 4, 0, True)])
+        nn = NeuralNetwork()
+        nn.generate_network(genome, 2, 2)
+        y = nn.forward([3, 22])
+        self.assertEqual(len(y), 2)
+        self.assertEqual(y, [0.5, 0.5])
+
+        genome = GenomeMock([(2, 4, 1, True), (1, 3, 0, True), (2, 3, 0, True), (1, 4, 0, True)])
+        nn.generate_network(genome, 2, 2)
+        y = nn.forward([3, 22])
+        self.assertEqual(y[0], 0.5)
+        self.assertAlmostEqual(y[1], 0.9926085)
+
+        genome = GenomeMock([(2, 4, 1, True), (1, 3, 0, True), (2, 3, 0, True), (1, 4, -2, True)])
+        nn.generate_network(genome, 2, 2)
+        y = nn.forward([3, 22])
+        self.assertEqual(y[0], 0.5)
+        self.assertAlmostEqual(y[1], 0.00739157)
+
+        genome = GenomeMock([(2, 4, 1, True), (1, 3, 0, False), (2, 3, 0, False), (1, 4, -2, True)])
+        nn.generate_network(genome, 2, 2)
+        y = nn.forward([3, 22])
+        self.assertEqual(y[0], 0.5)
+        self.assertAlmostEqual(y[1], 0.00739157)
+
+    def test_hard_forward_propagation(self):
+        genome = GenomeMock([(1, 5, 3, True), (2, 5, -2, True), (1, 6, -1, True), (5, 6, -3.4, True), (3, 6, 4, True),
+                             (6, 4, 5, True)])
+        nn = NeuralNetwork()
+        nn.generate_network(genome, 3, 1)
+        y = nn.forward([0.2, 2, -0.02])
+        self.assertAlmostEqual(y[0], 0.5144, places=4)
+
 
 if __name__ == '__main__':
     unittest.main()
