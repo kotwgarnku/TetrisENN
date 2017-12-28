@@ -113,6 +113,12 @@ class NeuronTestCase(unittest.TestCase):
         y = nn.forward([0.2, 2, -0.02])
         self.assertAlmostEqual(y[0], 0.5144, places=4)
 
+        genome = GenomeMock([(1, 5, 3, True), (2, 5, -2, True), (1, 7, -1, True), (5, 7, -3.4, True), (3, 7, 4, True),
+                             (7, 6, 2, True), (6, 4, 0.3, True)])
+        nn.generate_network(genome, 3, 1)
+        y = nn.forward([0.2, 2, -0.02])
+        self.assertAlmostEqual(y[0], 0.6778, places=4)
+
 
 if __name__ == '__main__':
     unittest.main()
