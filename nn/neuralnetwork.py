@@ -58,7 +58,7 @@ class NeuralNetwork:
             self._input_neurons[index].take_input_signal(X[index - 1])
 
         # Forward propagation with depth-first search
-        self.DFS(1)
+        self._DFS()
 
         # Fire output nodes
         for output_neuron in self._output_neurons.values():
@@ -87,7 +87,7 @@ class NeuralNetwork:
                 self._neurons[v].take_input_signal(connection_value)
 
 
-    def DFS(self, v):
+    def _DFS(self):
         visited = [False]*(len(self._neurons))
 
         # We start depth-first search with node with ID 1
