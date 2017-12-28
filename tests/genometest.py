@@ -59,6 +59,14 @@ class TestGenomeCase(unittest.TestCase):
         self.assertEqual(nodes[3].node_type, 'output')
         self.assertEqual(nodes[3].node_id, 4)
 
+    def test_connections_sorting_by_innovation_number(self):
+        genome = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        connections = genome._sort_connections_by_innovation_number(genome.connection_genes)
+        self.assertLess(connections[0].innovation_number, connections[1].innovation_number)
+        self.assertLess(connections[1].innovation_number, connections[2].innovation_number)
+        self.assertLess(connections[2].innovation_number, connections[3].innovation_number)
+
+
 
 
 if __name__ == '__main__':
