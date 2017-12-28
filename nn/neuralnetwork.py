@@ -92,6 +92,7 @@ class NeuralNetwork:
         Depth-first search
         :return:
         """
+        a = 2
         visited = [False]*(len(self._neurons))
 
         # We start depth-first search with node with ID 1
