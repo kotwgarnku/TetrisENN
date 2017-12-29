@@ -18,7 +18,7 @@ class NeuralNetwork:
         :param output_size: network output size
         :return:
         """
-        # In case that this neural network object already contained some neural network clean it
+        # In case that this neural network object already contained some neural network clean it.
         self.clean_network()
         self._input_size = input_size
         self._output_size = output_size
