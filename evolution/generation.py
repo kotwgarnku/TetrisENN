@@ -18,8 +18,8 @@ class Generation():
         pass
 
 
-class Spiecies():
-    def adjust_genomes_gitnesses(self):
+class Species():
+    def adjust_genomes_fitnesses(self):
         pass
 
     def get_parents(self):
