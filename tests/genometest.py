@@ -41,7 +41,7 @@ class TestGenomeCase(unittest.TestCase):
         genome2 = Genome([[1, 4, 0, True], [1, 2, 0, True], [1, 3, 0, True]], 1, 3)
 
         self.assertEqual(genome.get_connections_ids(), [(1, 3), (1, 4), (2, 3), (2, 4)])
-        self.assertEqual(genome2.get_connections_ids(), [(1, 4), (1, 2), (1, 3)])
+        self.assertEqual(genome2.get_connections_ids(), [(1, 2), (1, 3), (1, 4)])
 
     def test_get_connections(self):
         genome = Genome([[2, 3, 0, True], [1, 4, 0, True], [1, 3, 0, True], [2, 4, 0, True]], 2, 2)
@@ -67,7 +67,15 @@ class TestGenomeCase(unittest.TestCase):
         self.assertLess(connections[1].innovation_number, connections[2].innovation_number)
         self.assertLess(connections[2].innovation_number, connections[3].innovation_number)
 
+    def test_mutate_new_connection_to_full_genome(self):
+        full_genome = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 2)
+        full_genome._mutate_new_connection(1.0)
+        self.assertEqual([(1, 3), (1, 4), (2, 3), (2, 4)], full_genome.get_connections_ids())
 
+    def test_mutate_new_connection_to_not_full_genome(self):
+        full_genome = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True]], 2, 2)
+        full_genome._mutate_new_connection(1.0)
+        self.assertEqual([(1, 3), (1, 4), (2, 3), (2, 4)], full_genome.get_connections_ids())
 
 
 if __name__ == '__main__':
