@@ -1,4 +1,6 @@
 from evolution.util import sort_connections_by_innovation_number
+import random
+
 
 class Genome:
     """
@@ -25,6 +27,8 @@ class Genome:
         """
         self.node_genes = {}
         self.connection_genes = {}
+        self.input_size = input_size
+        self.output_size = output_size
 
         self._create_connection_genes(connections)
         self._set_up_node_genes_types(input_size, output_size)
@@ -79,7 +83,7 @@ class Genome:
                                                                                 x - source noce ID(Integer),
                                                                                 y - destination node ID(Integer)
         """
-        return [(s_id, d_id) for s_id, d_id in self.connection_genes.keys()]
+        return sorted([(s_id, d_id) for s_id, d_id in self.connection_genes.keys()])
 
     def get_connections(self):
         """
@@ -97,12 +101,65 @@ class Genome:
         """
         return [node for (key, node) in sorted(self.node_genes.items())]
 
-    def mutate(self):
+    def mutate(self, coefficients):
         """
         Mutates genome. Currently mutation can add a connection, split connection in two and add a node,
         disable connection(make sure not to disable all connections of any of the output nodes)
         and change connection weight.
         """
+        uniform_value = random.uniform(0.0, 1.0)
+
+        # each coefficient represent probability between [0;1]
+        if uniform_value <= coefficients['add_connection']:
+            self._mutate_new_connection(coefficients['max_weight_mutation'])
+
+        if uniform_value <= coefficients['split_connection']:
+            self._mutate_split_connection()
+
+        if uniform_value <= coefficients['disable_connection']:
+            self._mutate_disable_connection()
+
+        if uniform_value <= coefficients['change_weight']:
+            self._mutate_change_weight(coefficients['max_weight_mutation'])
+
+    def _mutate_new_connection(self, max_weight):
+        input_indexes = range(1, self.input_size + 1)
+        hidden_indexes = range(self.output_size + 1, len(self.node_genes) - self.output_size + 1)
+        output_indexes = range(len(self.node_genes) - self.output_size + 1, len(self.node_genes) + 1)
+
+        # build lists of posible indexes
+        possible_source_indexes = input_indexes + hidden_indexes
+        possible_destination_indexes = hidden_indexes + output_indexes
+
+        # produce every possible connection not already in connection_genes
+        possible_connections = [(s, d)
+                                for s in possible_source_indexes
+                                for d in possible_destination_indexes
+                                if s < d and (s, d) not in self.connection_genes]
+
+        # if no new connection possible, end mutation
+        if not possible_connections:
+            return
+
+        # choose random new connection
+        new_connection = random.choice(possible_connections)
+
+        # get connection parameters
+        source_id = new_connection[0]
+        destination_id = new_connection[1]
+        weight = random.uniform(0.0, max_weight)
+        enable = True
+
+        # create new connection
+        self.connection_genes[(source_id, destination_id)] = ConnectionGene(source_id, destination_id, weight, enable)
+
+    def _mutate_split_connection(self):
+        pass
+
+    def _mutate_disable_connection(self):
+        pass
+
+    def _mutate_change_weight(self, max_weight_change):
         pass
 
     def mate(self, partner):
