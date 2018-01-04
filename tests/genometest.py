@@ -101,6 +101,49 @@ class TestGenomeCase(unittest.TestCase):
         (source_id, dest_id, new_weight, enable) = genome.get_connections()[0]
         self.assertAlmostEqual(weight, new_weight)
 
+    def test_mutate_for_0_percent_chance_for_any_mutation(self):
+        # probability for each mutation
+        mutation_coefficients = dict(add_connection=0.0, split_connection=0.0, change_weight=0.0,
+                                     new_connection_abs_max_weight=5.0, max_weight_mutation=5.0)
+        weight = 0.0
+        genome = Genome([[1, 2, weight, True]], 1, 1)
+        genome.mutate(mutation_coefficients)
+        # add new connection/node mutation
+        self.assertEqual([(1, 2)], genome.get_connections_ids())
+        # weight mutation
+        (source_id, dest_id, new_weight, enable) = genome.get_connections()[0]
+        self.assertAlmostEqual(weight, new_weight)
+
+    def test_mutate_for_100_percent_chance_for_add_connection_mutation(self):
+        # probability for each mutation
+        mutation_coefficients = dict(add_connection=1.0, split_connection=0.0, change_weight=0.0,
+                                     new_connection_abs_max_weight=5.0, max_weight_mutation=5.0)
+        weight = 0.0
+        genome = Genome([[1, 3, weight, True], [1, 4, weight, True], [2, 3, weight, True]], 2, 2)
+        genome.mutate(mutation_coefficients)
+        self.assertEqual([(1, 3), (1, 4), (2, 3), (2, 4)], genome.get_connections_ids())
+
+    def test_mutate_for_100_percent_chance_for_split_connection_mutation(self):
+        # probability for each mutation
+        mutation_coefficients = dict(add_connection=0.0, split_connection=1.0, change_weight=0.0,
+                                     new_connection_abs_max_weight=5.0, max_weight_mutation=5.0)
+        weight = 0.0
+        genome = Genome([[1, 2, weight, True]], 1, 1)
+        genome.mutate(mutation_coefficients)
+        # add new connection/node mutation
+        self.assertEqual([(1, 2), (1, 3), (3, 2)], genome.get_connections_ids())
+
+    def test_mutate_for_100_percent_chance_for_weight_mutation(self):
+        # probability for each mutation
+        mutation_coefficients = dict(add_connection=0.0, split_connection=0.0, change_weight=1.0,
+                                     new_connection_abs_max_weight=5.0, max_weight_mutation=5.0)
+        weight = 0.0
+        genome = Genome([[1, 2, weight, True]], 1, 1)
+        genome.mutate(mutation_coefficients)
+        # add new connection/node mutation
+        (source_id, dest_id, new_weight, enable) = genome.get_connections()[0]
+        self.assertNotAlmostEqual(weight, new_weight)
+
 
 if __name__ == '__main__':
     firstSuite = unittest.TestLoader().loadTestsFromTestCase(TestGenomeCase)
