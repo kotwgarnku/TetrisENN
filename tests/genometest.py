@@ -87,6 +87,20 @@ class TestGenomeCase(unittest.TestCase):
         genome._mutate_split_connection()
         self.assertEqual([(1, 2)], genome.get_connections_ids())
 
+    def test_mutate_change_weight_for_genome_with_enabled_connection(self):
+        weight = 0.0
+        genome = Genome([[1, 2, weight, True]], 1, 1)
+        genome._mutate_change_weight(1.0)
+        (source_id, dest_id, new_weight, enable) = genome.get_connections()[0]
+        self.assertNotAlmostEqual(weight, new_weight)
+
+    def test_mutate_change_weight_for_genome_with_disabled_connection(self):
+        weight = 0.0
+        genome = Genome([[1, 2, weight, False]], 1, 1)
+        genome._mutate_change_weight(1.0)
+        (source_id, dest_id, new_weight, enable) = genome.get_connections()[0]
+        self.assertAlmostEqual(weight, new_weight)
+
 
 if __name__ == '__main__':
     firstSuite = unittest.TestLoader().loadTestsFromTestCase(TestGenomeCase)
