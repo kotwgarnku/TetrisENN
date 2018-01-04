@@ -154,14 +154,10 @@ class Genome:
         self.connection_genes[(source_id, destination_id)] = ConnectionGene(source_id, destination_id, weight, enable)
 
     def _mutate_split_connection(self):
-        # build enabled connection pool
-        enabled_connections = [c for key, c in self.connection_genes.items() if c.enabled]
+        connection = self._get_random_enabled_connection()
 
-        if not enabled_connections:
+        if not connection:
             return
-
-        # choose connection to split
-        connection = random.choice(enabled_connections)
 
         # disable this connection
         connection.enabled = False
@@ -189,8 +185,25 @@ class Genome:
                                                                                   second_connection_weight,
                                                                                   second_connection_enabled)
 
+    def _get_random_enabled_connection(self):
+        # build enabled connection pool
+        enabled_connections = [c for key, c in self.connection_genes.items() if c.enabled]
+
+        if not enabled_connections:
+            return None
+
+        # choose connection to split
+        return random.choice(enabled_connections)
+
     def _mutate_change_weight(self, max_weight_change):
-        pass
+        connection = self._get_random_enabled_connection()
+
+        if not connection:
+            return
+
+        # generate new weight by adding value from N(0, MAX/2) -> chance for value exceeding MAX is ~2%
+        # chance for value exceeding MAX twice is 0.003%
+        connection.weight = connection.weight + random.normalvariate(mu=0.0, sigma=max_weight_change/2)
 
     def mate(self, partner):
         """
