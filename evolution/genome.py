@@ -146,12 +146,14 @@ class Genome:
 
         # get connection parameters
         source_id = new_connection[0]
+        source_node = self.node_genes[source_id]
         destination_id = new_connection[1]
+        destination_node = self.node_genes[destination_id]
         weight = random.normalvariate(mu=0.0, sigma=max_weight/2)
         enable = True
 
         # create new connection
-        self.connection_genes[(source_id, destination_id)] = ConnectionGene(source_id, destination_id, weight, enable)
+        self.connection_genes[(source_id, destination_id)] = ConnectionGene(source_node, destination_node, weight, enable)
 
     def _mutate_split_connection(self):
         connection = self._get_random_enabled_connection()
@@ -227,6 +229,12 @@ class ConnectionGene:
     _innovation_number = 0
 
     def __init__(self, source_node=None, destination_node=None, weight=1.0, enabled=False):
+        """
+        :type source_node: NodeGene
+        :type destination_node: NodeGene
+        :type weight: float
+        :type enabled: bool
+        """
         self.source_node = source_node
         self.destination_node = destination_node
         self._check_connection_vialability()
