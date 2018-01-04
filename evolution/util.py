@@ -60,5 +60,5 @@ def count_avg_weight_difference(connections_a, connections_b):
     weight_differences = [abs(a.weight - b.weight)
                           for a in connections_a
                           for b in connections_b
-                          if a.innovation_number is b.innovation_number]
+                          if a.innovation_number == b.innovation_number]
     return sum(weight_differences) / float(len(weight_differences))
