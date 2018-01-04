@@ -111,6 +111,7 @@ class Genome:
         1. add a connection,
         2. add a node (4 -> 5 ==> 4 -> 9 -> 5),
         3. change connection weight.
+        :param coefficients: dictionary with mutation coefficients
         """
         uniform_value = random.uniform(0.0, 1.0)
 
