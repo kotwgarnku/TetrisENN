@@ -14,7 +14,6 @@ class UtilTestCase(unittest.TestCase):
         # number of excess: 2 (9 and 10)
         # number of disjoint: 3 (6, 7, 8)
         # avg weight difference: 0 (common connections have the same weight from 1 to 5)
-        getConn(1)
         self.connections_a = []
         self.connections_b = []
         self.connections_a = [
@@ -36,8 +35,6 @@ class UtilTestCase(unittest.TestCase):
 
         self.connections_a = sorted(self.connections_a, key=lambda x: x.innovation_number)
         self.connections_b = sorted(self.connections_b, key=lambda x: x.innovation_number)
-        print([x.innovation_number for x in self.connections_a])
-        print([x.innovation_number for x in self.connections_b])
 
     def test_count_disjoint_connection_genes(self):
         self.assertEqual(3, count_disjoint_connection_genes(self.connections_a, self.connections_b))

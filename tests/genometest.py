@@ -1,7 +1,7 @@
 import unittest
 
 from evolution.genome import ConnectionGene, NodeGene, Genome
-from evolution.genome import sort_connections_by_innovation_number
+from evolution.util import sort_connections_by_innovation_number
 
 
 class TestConnectionGeneCase(unittest.TestCase):
