@@ -29,6 +29,8 @@ class Genome:
         self.connection_genes = {}
         self.input_size = input_size
         self.output_size = output_size
+        self.input_node_ids = []
+        self.output_node_ids = []
 
         self._create_connection_genes(connections)
         self._set_up_node_genes_types(input_size, output_size)
@@ -56,8 +58,10 @@ class Genome:
     def _set_up_node_genes_types(self, input_size, output_size):
         for index in range(1, input_size + 1):
             self.node_genes[index].node_type = 'input'
+            self.input_node_ids.append(index)
         for index in range(len(self.node_genes) - output_size + 1, len(self.node_genes) + 1):
             self.node_genes[index].node_type = 'output'
+            self.output_node_ids.append(index)
 
     def _check_nodes(self, source_node_id, dest_node_id):
         if source_node_id is None and dest_node_id is None:
@@ -121,19 +125,17 @@ class Genome:
             self._mutate_change_weight(coefficients['max_weight_mutation'])
 
     def _mutate_new_connection(self, max_weight):
-        input_indexes = range(1, self.input_size + 1)
-        hidden_indexes = range(self.output_size + 1, len(self.node_genes) - self.output_size + 1)
-        output_indexes = range(len(self.node_genes) - self.output_size + 1, len(self.node_genes) + 1)
-
         # build lists of possible indexes
-        possible_source_indexes = input_indexes + hidden_indexes
-        possible_destination_indexes = hidden_indexes + output_indexes
+        possible_source_indexes = [idx for idx in range(1, len(self.node_genes) + 1)
+                                   if idx not in self.output_node_ids]
+        possible_destination_indexes = [idx for idx in range(1, len(self.node_genes) + 1)
+                                        if idx not in self.input_node_ids]
 
         # produce every possible connection not already in connection_genes
         possible_connections = [(s, d)
                                 for s in possible_source_indexes
                                 for d in possible_destination_indexes
-                                if s < d and (s, d) not in self.connection_genes]
+                                if (s, d) not in self.connection_genes]
 
         # if no new connection possible, end mutation
         if not possible_connections:
