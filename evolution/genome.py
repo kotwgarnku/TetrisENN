@@ -116,7 +116,7 @@ class Genome:
 
         # each coefficient represent probability between [0;1]
         if uniform_value <= coefficients['add_connection']:
-            self._mutate_new_connection(coefficients['max_weight_mutation'])
+            self._mutate_new_connection(coefficients['new_connection_abs_max_weight'])
 
         if uniform_value <= coefficients['split_connection']:
             self._mutate_split_connection()
@@ -147,7 +147,7 @@ class Genome:
         # get connection parameters
         source_id = new_connection[0]
         destination_id = new_connection[1]
-        weight = random.uniform(0.0, max_weight)
+        weight = random.normalvariate(mu=0.0, sigma=max_weight/2)
         enable = True
 
         # create new connection
