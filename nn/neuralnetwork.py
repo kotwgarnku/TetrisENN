@@ -3,6 +3,7 @@ import numpy as np
 
 class NeuralNetwork:
     def __init__(self):
+        self._genome = None
         self._connections = {}
         self._neurons = {}
         self._input_size = 0
@@ -10,20 +11,17 @@ class NeuralNetwork:
         self._input_neurons = {}
         self._output_neurons = {}
 
-    def generate_network(self, genome, input_size, output_size):
+    def generate_network(self, genome):
         """
         Generates neural network based on given genome.
         :param genome: (Genome) - genome containing all informations
-        :param input_size: network input size
-        :param output_size: network output size
         :return:
         """
-        # In case that this neural network object already contained some neural network clean it.
         self.clean_network()
-        self._input_size = input_size
-        self._output_size = output_size
-        self.connectionss = sorted(genome.get_connections()) # This thing is only for testing purpose so the sensible way would bo to somehow delete it, but it's too late to do it now, will do some other time
-        connections = sorted(genome.get_connections())
+        self._genome = genome
+        self._input_size = genome.input_size
+        self._output_size = genome.output_size
+        connections = genome.get_connections()
         for source, destination, weight, enabled in connections:
             if source not in self._neurons:
                 self._neurons[source] = Neuron()
@@ -33,10 +31,10 @@ class NeuralNetwork:
                 self._connections[(source, destination)] = weight
                 self._neurons[destination].incoming_connections.append((source, weight, enabled))
 
-        for index in range(1, input_size + 1):
+        for index in range(1, self._input_size + 1):
             self._input_neurons[index] = self._neurons[index]
 
-        for index in range(input_size + 1, self._input_size + self._output_size + 1):
+        for index in range(self._input_size + 1, self._input_size + self._output_size + 1):
             self._output_neurons[index] = self._neurons[index]
 
     def clean_network(self):
