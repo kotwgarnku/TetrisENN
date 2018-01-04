@@ -103,9 +103,10 @@ class Genome:
 
     def mutate(self, coefficients):
         """
-        Mutates genome. Currently mutation can add a connection, split connection in two and add a node,
-        disable connection(make sure not to disable all connections of any of the output nodes)
-        and change connection weight.
+        Mutates genome. Mutation can:
+        1. add a connection,
+        2. add a node (4 -> 5 ==> 4 -> 9 -> 5),
+        3. change connection weight.
         """
         uniform_value = random.uniform(0.0, 1.0)
 
@@ -116,9 +117,6 @@ class Genome:
         if uniform_value <= coefficients['split_connection']:
             self._mutate_split_connection()
 
-        if uniform_value <= coefficients['disable_connection']:
-            self._mutate_disable_connection()
-
         if uniform_value <= coefficients['change_weight']:
             self._mutate_change_weight(coefficients['max_weight_mutation'])
 
@@ -127,7 +125,7 @@ class Genome:
         hidden_indexes = range(self.output_size + 1, len(self.node_genes) - self.output_size + 1)
         output_indexes = range(len(self.node_genes) - self.output_size + 1, len(self.node_genes) + 1)
 
-        # build lists of posible indexes
+        # build lists of possible indexes
         possible_source_indexes = input_indexes + hidden_indexes
         possible_destination_indexes = hidden_indexes + output_indexes
 
@@ -154,9 +152,6 @@ class Genome:
         self.connection_genes[(source_id, destination_id)] = ConnectionGene(source_id, destination_id, weight, enable)
 
     def _mutate_split_connection(self):
-        pass
-
-    def _mutate_disable_connection(self):
         pass
 
     def _mutate_change_weight(self, max_weight_change):
