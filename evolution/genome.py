@@ -210,7 +210,8 @@ class Genome:
 
     def compatibility_distance(self, partner, coefficients):
         """
-        Returns offspring of mating this genome with a partner.
+        Returns compatibility distance between this genome and partner.
+        The greater, the more the genomes differ.
         :param partner:(Genome) Genome object to mate with
         :param coefficients: dictionary with compatibility distance factors
         """
