@@ -1,4 +1,4 @@
-from evolution.util import sort_connections_by_innovation_number
+import evolution.util
 import random
 
 
@@ -208,14 +208,29 @@ class Genome:
         # chance for value exceeding MAX twice is 0.003%
         connection.weight = connection.weight + random.normalvariate(mu=0.0, sigma=max_weight_change/2)
 
-    def mate(self, partner):
+    def compatibility_distance(self, partner, coefficients):
         """
         Returns offspring of mating this genome with a partner.
         :param partner:(Genome) Genome object to mate with
+        :param coefficients: dictionary with compatibility distance factors
         """
-        connections_a = sort_connections_by_innovation_number(self.connection_genes)
-        connections_b = sort_connections_by_innovation_number(partner.connection_genes)
-        # TODO rest of this
+        connections_a = self.connection_genes
+        connections_b = partner.connection_genes
+
+        excess_number = evolution.util.count_excess_connection_genes(connections_a, connections_b)
+        disjoint_number = evolution.util.count_disjoint_connection_genes(connections_a, connections_b)
+        avg_weight_difference = evolution.util.count_avg_weight_difference(connections_a, connections_b)
+        normalization_factor = float(max(len(connections_a), len(connections_b)))
+
+        # "N can be set to 1 if both genomes are small, i.e. consist of fewer than 20 genes"
+        if normalization_factor < 20.0:
+            normalization_factor = 1.0
+
+        excess_component = coefficients['excess_factor'] * excess_number / normalization_factor
+        disjoint_component = coefficients['disjoint_factor'] * disjoint_number / normalization_factor
+        weight_difference_component = coefficients['weight_difference_factor'] * avg_weight_difference
+
+        return excess_component + disjoint_component + weight_difference_component
 
 
 class NodeGene:
