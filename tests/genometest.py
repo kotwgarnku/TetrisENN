@@ -77,6 +77,16 @@ class TestGenomeCase(unittest.TestCase):
         full_genome._mutate_new_connection(1.0)
         self.assertEqual([(1, 3), (1, 4), (2, 3), (2, 4)], full_genome.get_connections_ids())
 
+    def test_mutate_split_conneciton_to_genome_with_enabled_connection(self):
+        genome = Genome([[1, 2, 0, True]], 1, 1)
+        genome._mutate_split_connection()
+        self.assertEqual([(1, 2), (1, 3), (3, 2)], genome.get_connections_ids())
+
+    def test_mutate_split_conneciton_to_genome_with_disabled_connection(self):
+        genome = Genome([[1, 2, 0, False]], 1, 1)
+        genome._mutate_split_connection()
+        self.assertEqual([(1, 2)], genome.get_connections_ids())
+
 
 if __name__ == '__main__':
     firstSuite = unittest.TestLoader().loadTestsFromTestCase(TestGenomeCase)

@@ -154,7 +154,40 @@ class Genome:
         self.connection_genes[(source_id, destination_id)] = ConnectionGene(source_id, destination_id, weight, enable)
 
     def _mutate_split_connection(self):
-        pass
+        # build enabled connection pool
+        enabled_connections = [c for key, c in self.connection_genes.items() if c.enabled]
+
+        if not enabled_connections:
+            return
+
+        # choose connection to split
+        connection = random.choice(enabled_connections)
+
+        # disable this connection
+        connection.enabled = False
+
+        # get old connection parameters
+        (old_source_id, old_destination_id, old_weight, old_enabled) = connection.get_connection()
+        old_source_node = self.node_genes[old_source_id]
+        old_destination_node = self.node_genes[old_destination_id]
+
+        # create new node
+        new_node_id = len(self.node_genes) + 1
+        new_node = self._create_new_node(new_node_id)
+
+        # create connection source -> new_node
+        first_connection_weight = 1.0
+        first_connection_enabled = True
+        self.connection_genes[(old_source_id, new_node_id)] = ConnectionGene(old_source_node, new_node,
+                                                                             first_connection_weight,
+                                                                             first_connection_enabled)
+
+        # create connection new_node -> destination
+        second_connection_weight = old_weight
+        second_connection_enabled = True
+        self.connection_genes[(new_node_id, old_destination_id)] = ConnectionGene(new_node, old_destination_node,
+                                                                                  second_connection_weight,
+                                                                                  second_connection_enabled)
 
     def _mutate_change_weight(self, max_weight_change):
         pass
@@ -166,11 +199,12 @@ class Genome:
         """
         connections_a = sort_connections_by_innovation_number(self.connection_genes)
         connections_b = sort_connections_by_innovation_number(partner.connection_genes)
-        #TODO rest of this
+        # TODO rest of this
 
 
 class NodeGene:
     """This class may actually be kinda redundant but OOP is OOP"""
+
     def __init__(self, node_id=-1, node_type='hidden'):
         self.node_id = node_id
         self.node_type = node_type
@@ -179,7 +213,7 @@ class NodeGene:
 class ConnectionGene:
     _innovation_number = 0
 
-    def __init__(self, source_node=None, destination_node=None, weight=1, enabled=False):
+    def __init__(self, source_node=None, destination_node=None, weight=1.0, enabled=False):
         self.source_node = source_node
         self.destination_node = destination_node
         self._check_connection_vialability()
@@ -200,5 +234,3 @@ class ConnectionGene:
     def _get_new_innovation_number():
         ConnectionGene._innovation_number += 1
         return ConnectionGene._innovation_number - 1
-
-
