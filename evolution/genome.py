@@ -97,7 +97,7 @@ class Genome:
                                                                             w - weight of connection(float),
                                                                             e - flag if connection is enabled(boolean)
         """
-        return [connection.get_connection() for connection in self.connection_genes.values()]
+        return sorted([connection.get_connection() for connection in self.connection_genes.values()])
 
     def get_nodes(self):
         """
