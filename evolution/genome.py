@@ -1,5 +1,6 @@
 import evolution.util
 import random
+import copy
 
 
 class Genome:
@@ -32,14 +33,21 @@ class Genome:
         self.input_node_ids = []
         self.output_node_ids = []
 
-        self._create_connection_genes(connections)
+        # standard creation of new genome
+        if len(connections[0]) == 4:
+            self._create_connection_genes(connections)
+
+        # creation used during reproduction
+        elif len(connections[0]) == 5:
+            self._create_connection_genes_with_innovation_numbers(connections)
+
+        else:
+            raise Exception('Connection does not contain all necessary information')
+
         self._set_up_node_genes_types(input_size, output_size)
 
     def _create_connection_genes(self, connections):
         for connection in connections:
-            if len(connection) != 4:
-                raise Exception('Connection does not contain all necessary information')
-
             source_node_id, dest_node_id, weight, enabled = connection
             self._check_nodes(source_node_id, dest_node_id)
 
@@ -54,6 +62,24 @@ class Genome:
             self._check_connections_uniqueness(source_node, dest_node)
             self.connection_genes[(source_node.node_id, dest_node.node_id)] = ConnectionGene(source_node, dest_node,
                                                                                              weight, enabled)
+
+    def _create_connection_genes_with_innovation_numbers(self, connections):
+        for connection in connections:
+            source_node_id, dest_node_id, weight, enabled, innovation_number = connection
+            self._check_nodes(source_node_id, dest_node_id)
+
+            source_node = self.node_genes.get(source_node_id)
+            dest_node = self.node_genes.get(dest_node_id)
+
+            if source_node is None:
+                source_node = self._create_new_node(source_node_id)
+            if dest_node is None:
+                dest_node = self._create_new_node(dest_node_id)
+
+            self._check_connections_uniqueness(source_node, dest_node)
+            self.connection_genes[(source_node.node_id, dest_node.node_id)] = ConnectionGene(source_node, dest_node,
+                                                                                             weight, enabled,
+                                                                                             innovation_number)
 
     def _set_up_node_genes_types(self, input_size, output_size):
         for index in range(1, input_size + 1):
@@ -233,6 +259,45 @@ class Genome:
 
         return excess_component + disjoint_component + weight_difference_component
 
+    @staticmethod
+    def reproduce(parent1, parent2):
+        """
+        Produces new genome as a result of reproduction of 2 genomes.
+        :type parent1: Genome
+        :type parent2: Genome
+        :return: new Genome, a child of this genome and the partner
+        """
+        assert parent1.input_size == parent2.input_size, "parents' input_size differ"
+        assert parent1.output_size == parent2.output_size, "parents' output_size differ"
+        child_connections_with_innovs = []
+
+        # generate dictionaries as (innovation_number, connection)
+        parent1_connections = dict((conn.innovation_number, conn) for (key, conn) in parent1.connection_genes.items())
+        parent2_connections = dict((conn.innovation_number, conn) for (key, conn) in parent2.connection_genes.items())
+
+        # get set of every innovation number existing in either collection
+        innovation_numbers = set(parent1_connections.keys()).union(set(parent2_connections.keys()))
+
+        # generate child connections with innovation numbers
+        for innov in innovation_numbers:
+            connection_gene = None
+            if innov in parent1_connections and innov in parent2_connections:
+                connection_gene = random.choice([parent1_connections[innov], parent2_connections[innov]])
+            elif innov in parent1_connections:
+                connection_gene = parent1_connections[innov]
+            elif innov in parent2_connections:
+                connection_gene = parent2_connections[innov]
+
+            (source_id, dest_id, weight, enabled) = connection_gene.get_connection()
+            connection_with_innov = (source_id, dest_id, weight, enabled, innov)
+            child_connections_with_innovs.append(connection_with_innov)
+
+        # both parents have to have the same input and output sizes
+        input_size = parent1.input_size
+        output_size = parent1.output_size
+
+        return Genome(child_connections_with_innovs, input_size, output_size)
+
 
 class NodeGene:
     """This class may actually be kinda redundant but OOP is OOP"""
@@ -245,19 +310,23 @@ class NodeGene:
 class ConnectionGene:
     _innovation_number = 0
 
-    def __init__(self, source_node=None, destination_node=None, weight=1.0, enabled=False):
+    def __init__(self, source_node=None, destination_node=None, weight=1.0, enabled=False, innovation_number=None):
         """
         :type source_node: NodeGene
         :type destination_node: NodeGene
         :type weight: float
         :type enabled: bool
+        :type innovation_number: int
         """
         self.source_node = source_node
         self.destination_node = destination_node
         self._check_connection_vialability()
         self.weight = weight
         self.enabled = enabled
-        self.innovation_number = self._get_new_innovation_number()
+        if innovation_number is None:
+            self.innovation_number = self._get_new_innovation_number()
+        else:
+            self.innovation_number = innovation_number
 
     def _check_connection_vialability(self):
         if self.source_node is None and self.destination_node is None:
