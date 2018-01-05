@@ -32,6 +32,7 @@ class Genome:
         self.output_size = output_size
         self.input_node_ids = []
         self.output_node_ids = []
+        self.fitness = None
 
         # standard creation of new genome
         if len(connections[0]) == 4:
@@ -269,6 +270,16 @@ class Genome:
         """
         assert parent1.input_size == parent2.input_size, "parents' input_size differ"
         assert parent1.output_size == parent2.output_size, "parents' output_size differ"
+
+        if parent1.fitness == parent2.fitness:
+            return Genome._reproduce_equal_genomes(parent1, parent2)
+        elif parent1.fitness > parent2.fitness:
+            return Genome._reproduce_stronger_with_weaker(parent1, parent2)
+        elif parent1.fitness < parent2.fitness:
+            return Genome._reproduce_stronger_with_weaker(parent2, parent1)
+
+    @staticmethod
+    def _reproduce_equal_genomes(parent1, parent2):
         child_connections_with_innovs = []
 
         # generate dictionaries as (innovation_number, connection)
@@ -298,6 +309,29 @@ class Genome:
 
         return Genome(child_connections_with_innovs, input_size, output_size)
 
+    @staticmethod
+    def _reproduce_stronger_with_weaker(stronger, weaker):
+        child_connections_with_innovs = []
+
+        # generate dictionaries as (innovation_number, connection)
+        stronger_connections = dict((conn.innovation_number, conn) for (key, conn) in stronger.connection_genes.items())
+        weaker_connections = dict((conn.innovation_number, conn) for (key, conn) in weaker.connection_genes.items())
+
+        # generate child connections with innovation numbers
+        for innov, stronger_conn in stronger_connections.items():
+            if innov in weaker_connections:
+                connection_gene = random.choice([stronger_conn, weaker_connections[innov]])
+            else:
+                connection_gene = stronger_conn
+
+            (source_id, dest_id, weight, enabled) = connection_gene.get_connection()
+            connection_with_innov = (source_id, dest_id, weight, enabled, innov)
+            child_connections_with_innovs.append(connection_with_innov)
+
+        input_size = stronger.input_size
+        output_size = stronger.output_size
+
+        return Genome(child_connections_with_innovs, input_size, output_size)
 
 class NodeGene:
     """This class may actually be kinda redundant but OOP is OOP"""
