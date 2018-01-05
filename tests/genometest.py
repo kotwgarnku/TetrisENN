@@ -152,6 +152,23 @@ class TestGenomeCase(unittest.TestCase):
         child = Genome.reproduce(genome1, genome2)
         self.assertEqual([(1, 3), (1, 4), (2, 3), (2, 4)], child.get_connections_ids())
 
+    def test_reproduce_equally_fit_genomes_with_overlapping_connections(self):
+        genome1 = Genome([[1, 3, 0, True], [2, 4, 0, True], [1, 4, 1, True]], 2, 2)
+        # genome2 becomes independent copy of genome 1 (same invocation numbers)
+        genome2 = Genome._reproduce_equal_genomes(genome1, genome1)
+        # add different connection
+        genome2._create_connection_genes([[2, 3, 0, True]])
+        # change genome 2 (1,4) conneciton weight
+        genome2.connection_genes[(1, 4)].weight = 5
+        genome1.fitness = 1.0
+        genome2.fitness = 1.0
+        child = Genome.reproduce(genome1, genome2)
+        self.assertEqual([(1, 3), (1, 4), (2, 3), (2, 4)], child.get_connections_ids())
+
+        overlapping_connection = child.connection_genes[(1, 4)]
+        weight = overlapping_connection.weight
+        self.assertTrue(weight == 1 or weight == 5)
+
     def test_reproduce_differently_fit_genomes(self):
         genome1 = Genome([[1, 3, 0, True], [2, 4, 0, True]], 2, 2)
         genome2 = Genome([[1, 4, 0, True], [2, 3, 0, True]], 2, 2)
@@ -164,6 +181,32 @@ class TestGenomeCase(unittest.TestCase):
         genome2.fitness = 2.0
         child = Genome.reproduce(genome1, genome2)
         self.assertEqual([(1, 4), (2, 3)], child.get_connections_ids())
+
+    def test_reproduce_differently_fit_genomes_with_overlapping_connections(self):
+        genome1 = Genome([[1, 3, 0, True], [2, 4, 0, True], [1, 4, 1, True]], 2, 2)
+        # genome2 becomes independent copy of genome 1 (same invocation numbers)
+        genome2 = Genome._reproduce_equal_genomes(genome1, genome1)
+        # add different connection
+        genome2._create_connection_genes([[2, 3, 0, True]])
+        # change genome 2 (1,4) connection weight
+        genome2.connection_genes[(1, 4)].weight = 5
+        genome1.fitness = 2.0
+        genome2.fitness = 1.0
+        child = Genome.reproduce(genome1, genome2)
+        self.assertEqual([(1, 3), (1, 4), (2, 4)], child.get_connections_ids())
+
+        overlapping_connection = child.connection_genes[(1, 4)]
+        weight = overlapping_connection.weight
+        self.assertTrue(weight == 1 or weight == 5)
+
+        genome1.fitness = 1.0
+        genome2.fitness = 2.0
+        child = Genome.reproduce(genome1, genome2)
+        self.assertEqual([(1, 3), (1, 4), (2, 3), (2, 4)], child.get_connections_ids())
+
+        overlapping_connection = child.connection_genes[(1, 4)]
+        weight = overlapping_connection.weight
+        self.assertTrue(weight == 1 or weight == 5)
 
 
 if __name__ == '__main__':
