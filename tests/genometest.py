@@ -144,11 +144,26 @@ class TestGenomeCase(unittest.TestCase):
         (source_id, dest_id, new_weight, enable) = genome.get_connections()[0]
         self.assertNotAlmostEqual(weight, new_weight)
 
-    def test_reproduce(self):
+    def test_reproduce_equally_fit_genomes(self):
         genome1 = Genome([[1, 3, 0, True], [2, 4, 0, True]], 2, 2)
         genome2 = Genome([[1, 4, 0, True], [2, 3, 0, True]], 2, 2)
+        genome1.fitness = 1.0
+        genome2.fitness = 1.0
         child = Genome.reproduce(genome1, genome2)
         self.assertEqual([(1, 3), (1, 4), (2, 3), (2, 4)], child.get_connections_ids())
+
+    def test_reproduce_differently_fit_genomes(self):
+        genome1 = Genome([[1, 3, 0, True], [2, 4, 0, True]], 2, 2)
+        genome2 = Genome([[1, 4, 0, True], [2, 3, 0, True]], 2, 2)
+        genome1.fitness = 2.0
+        genome2.fitness = 1.0
+        child = Genome.reproduce(genome1, genome2)
+        self.assertEqual([(1, 3), (2, 4)], child.get_connections_ids())
+
+        genome1.fitness = 1.0
+        genome2.fitness = 2.0
+        child = Genome.reproduce(genome1, genome2)
+        self.assertEqual([(1, 4), (2, 3)], child.get_connections_ids())
 
 
 if __name__ == '__main__':
