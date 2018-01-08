@@ -167,7 +167,7 @@ class Genome:
         possible_connections = [(s, d)
                                 for s in possible_source_indexes
                                 for d in possible_destination_indexes
-                                if (s, d) not in self.connection_genes]
+                                if s != d and (s, d) not in self.connection_genes]
 
         # if no new connection possible, end mutation
         if not possible_connections:
