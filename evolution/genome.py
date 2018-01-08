@@ -144,16 +144,14 @@ class Genome:
         3. change connection weight.
         :param coefficients: dictionary with mutation coefficients
         """
-        uniform_value = random.uniform(0.0, 1.0)
-
         # each coefficient represent probability between [0;1]
-        if uniform_value <= coefficients['add_connection']:
+        if random.uniform(0.0, 1.0) <= coefficients['add_connection']:
             self._mutate_new_connection(coefficients['new_connection_abs_max_weight'])
 
-        if uniform_value <= coefficients['split_connection']:
+        if random.uniform(0.0, 1.0) <= coefficients['split_connection']:
             self._mutate_split_connection()
 
-        if uniform_value <= coefficients['change_weight']:
+        if random.uniform(0.0, 1.0) <= coefficients['change_weight']:
             self._mutate_change_weight(coefficients['max_weight_mutation'])
 
     def _mutate_new_connection(self, max_weight):
