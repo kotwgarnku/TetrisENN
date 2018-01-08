@@ -61,8 +61,9 @@ class Genome:
                 dest_node = self._create_new_node(dest_node_id)
 
             self._check_connections_uniqueness(source_node, dest_node)
-            self.connection_genes[(source_node.node_id, dest_node.node_id)] = ConnectionGene(source_node, dest_node,
-                                                                                             weight, enabled)
+
+            new_connection = ConnectionGene(source_node, dest_node, weight, enabled)
+            self.connection_genes[(source_node_id, dest_node_id)] = new_connection
 
     def _create_connection_genes_with_innovation_numbers(self, connections):
         for connection in connections:
@@ -78,9 +79,9 @@ class Genome:
                 dest_node = self._create_new_node(dest_node_id)
 
             self._check_connections_uniqueness(source_node, dest_node)
-            self.connection_genes[(source_node.node_id, dest_node.node_id)] = ConnectionGene(source_node, dest_node,
-                                                                                             weight, enabled,
-                                                                                             innovation_number)
+
+            new_connection = ConnectionGene(source_node, dest_node, weight, enabled, innovation_number)
+            self.connection_genes[(source_node_id, dest_node_id)] = new_connection
 
     def _set_up_node_genes_types(self, input_size, output_size):
         for index in range(1, input_size + 1):
@@ -104,8 +105,11 @@ class Genome:
         if (source_node.node_id, dest_node.node_id) in self.connection_genes:
             raise Exception('Connections must be unique')
 
-    def _create_new_node(self, node_id):
+    def _create_new_node(self, node_id=None):
+        if node_id is None:
+            node_id = len(self.node_genes) + 1
         self.node_genes[node_id] = NodeGene(node_id=node_id)
+
         return self.node_genes[node_id]
 
     def get_connections_ids(self):
@@ -193,9 +197,9 @@ class Genome:
         connection.enabled = False
 
         # get old connection parameters
-        (old_source_id, old_destination_id, old_weight, old_enabled) = connection.get_connection()
+        (old_source_id, old_dest_id, old_weight, old_enabled) = connection.get_connection()
         old_source_node = self.node_genes[old_source_id]
-        old_destination_node = self.node_genes[old_destination_id]
+        old_dest_node = self.node_genes[old_dest_id]
 
         # create new node
         new_node_id = len(self.node_genes) + 1
@@ -204,16 +208,14 @@ class Genome:
         # create connection source -> new_node
         first_connection_weight = 1.0
         first_connection_enabled = True
-        self.connection_genes[(old_source_id, new_node_id)] = ConnectionGene(old_source_node, new_node,
-                                                                             first_connection_weight,
-                                                                             first_connection_enabled)
+        first_connection = ConnectionGene(old_source_node, new_node, first_connection_weight, first_connection_enabled)
+        self.connection_genes[(old_source_id, new_node_id)] = first_connection
 
         # create connection new_node -> destination
         second_connection_weight = old_weight
         second_connection_enabled = True
-        self.connection_genes[(new_node_id, old_destination_id)] = ConnectionGene(new_node, old_destination_node,
-                                                                                  second_connection_weight,
-                                                                                  second_connection_enabled)
+        second_connection = ConnectionGene(new_node, old_dest_node, second_connection_weight, second_connection_enabled)
+        self.connection_genes[(new_node_id, old_dest_id)] = second_connection
 
     def _get_random_enabled_connection(self):
         # build enabled connection pool
@@ -266,7 +268,7 @@ class Genome:
         Produces new genome as a result of reproduction of 2 genomes.
         :type parent1: Genome
         :type parent2: Genome
-        :return: new Genome, a child of this genome and the partner
+        :return: new Genome, a child of parent1 and parent2
         """
         assert parent1.input_size == parent2.input_size, "parents' input_size differ"
         assert parent1.output_size == parent2.output_size, "parents' output_size differ"
