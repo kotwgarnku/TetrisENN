@@ -195,7 +195,7 @@ class Genome:
         connection.enabled = False
 
         # get old connection parameters
-        (old_source_id, old_dest_id, old_weight, old_enabled) = connection.get_connection()
+        (old_source_id, old_dest_id, old_weight, _) = connection.get_connection()
         old_source_node = self.node_genes[old_source_id]
         old_dest_node = self.node_genes[old_dest_id]
 
