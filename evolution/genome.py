@@ -188,7 +188,7 @@ class Genome:
     def _mutate_split_connection(self):
         connection = self._get_random_enabled_connection()
 
-        if not connection:
+        if connection is None:
             return
 
         # disable this connection
@@ -224,7 +224,7 @@ class Genome:
     def _mutate_change_weight(self, max_weight_change):
         connection = self._get_random_enabled_connection()
 
-        if not connection:
+        if connection is None:
             return
 
         # generate new weight by adding value from N(0, MAX/2) -> chance for value exceeding MAX is ~2%
