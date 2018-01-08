@@ -202,8 +202,8 @@ class Genome:
         old_dest_node = self.node_genes[old_dest_id]
 
         # create new node
-        new_node_id = len(self.node_genes) + 1
-        new_node = self._create_new_node(new_node_id)
+        new_node = self._create_new_node()
+        new_node_id = new_node.node_id
 
         # create connection source -> new_node
         first_connection = ConnectionGene(old_source_node, new_node, weight=1.0, enabled=True)
