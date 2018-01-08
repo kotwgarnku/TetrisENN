@@ -206,15 +206,11 @@ class Genome:
         new_node = self._create_new_node(new_node_id)
 
         # create connection source -> new_node
-        first_connection_weight = 1.0
-        first_connection_enabled = True
-        first_connection = ConnectionGene(old_source_node, new_node, first_connection_weight, first_connection_enabled)
+        first_connection = ConnectionGene(old_source_node, new_node, weight=1.0, enabled=True)
         self.connection_genes[(old_source_id, new_node_id)] = first_connection
 
         # create connection new_node -> destination
-        second_connection_weight = old_weight
-        second_connection_enabled = True
-        second_connection = ConnectionGene(new_node, old_dest_node, second_connection_weight, second_connection_enabled)
+        second_connection = ConnectionGene(new_node, old_dest_node, weight=old_weight, enabled=True)
         self.connection_genes[(new_node_id, old_dest_id)] = second_connection
 
     def _get_random_enabled_connection(self):
