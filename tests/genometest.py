@@ -40,9 +40,6 @@ class TestGenomeCase(unittest.TestCase):
         genome = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 2)
         genome2 = Genome([[1, 4, 0, True], [1, 2, 0, True], [1, 3, 0, True]], 1, 3)
 
-        coeff = dict(excess_factor=1.0, disjoint_factor=1.0, weight_difference_factor=1.0)
-        genome.compatibility_distance(genome2, coeff)
-
         self.assertEqual(genome.get_connections_ids(), [(1, 3), (1, 4), (2, 3), (2, 4)])
         self.assertEqual(genome2.get_connections_ids(), [(1, 2), (1, 3), (1, 4)])
 
