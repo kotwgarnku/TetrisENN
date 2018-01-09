@@ -12,11 +12,34 @@ class TestSpecieCase(unittest.TestCase):
         specie.add_genome(Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1))
         self.assertEqual(len(specie.genomes), 3)
 
-    def test_genomes_fitness_adjusted(self):
+    # def test_genomes_fitness_adjusted(self):
+    #     specie = Specie()
+    #
+    #     g1 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
+    #     g1.fitness = 9
+    #     g2 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
+    #     g2.fitness = 1
+    #     g3 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
+    #     g3.fitness = 3
+    #
+    #     specie.add_genome(g1)
+    #     specie.add_genome(g2)
+    #     specie.add_genome(g3)
+    #
+    #     specie.adjust_fitness()
+    #
+    #     for (key, genome) in specie.genomes.items():
+    #         self.assertAlmostEqual(genome.fitness)
+    #
+    #     self.assertEqual(specie.genomes[0].fitness, 3)
+    #     self.assertAlmostEqual(specie.genomes[1].fitness, 0.333333, 6)
+    #     self.assertEqual(specie.genomes[2].fitness, 1)
+
+    def test_specie_fitness(self):
         specie = Specie()
 
         g1 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-        g1.fitness = 9
+        g1.fitness = 8
         g2 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
         g2.fitness = 1
         g3 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
@@ -28,25 +51,7 @@ class TestSpecieCase(unittest.TestCase):
 
         specie.adjust_fitness()
 
-        self.assertEqual(specie.genomes[0].fitness, 3)
-        self.assertAlmostEqual(specie.genomes[1].fitness, 0.333333, 6)
-        self.assertEqual(specie.genomes[2].fitness, 1)
-
-    def test_specie_fitness(self):
-        specie = Specie()
-
-        g1 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-        g1.fitness = 9
-        g2 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-        g2.fitness = 1
-        g3 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-        g3.fitness = 3
-
-        specie.add_genome(g1)
-        specie.add_genome(g2)
-        specie.add_genome(g3)
-
-        self.assertEqual(specie.get_fitness(), 13)
+        self.assertEqual(specie.get_fitness(), 4)
 
     def test_get_parents(self):
         specie = Specie()
