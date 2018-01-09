@@ -9,7 +9,7 @@ class Genome:
     """
     _genome_ID = 0
 
-    def __init__(self, connections, input_size, output_size):
+    def __init__(self, connections=None, input_size=None, output_size=None, genome_to_clone=None):
         """
         Create genome from given informations.
         :param connections: List of tuples representing connection genes. [(source, destination, weight, enabled),...].
@@ -33,6 +33,23 @@ class Genome:
         self.input_node_ids = []
         self.output_node_ids = []
         self.fitness = None
+
+        # copy another genome
+        if genome_to_clone is not None:
+            self.input_size = genome_to_clone.input_size
+            self.output_size = genome_to_clone.output_size
+
+            for node_gene in genome_to_clone.get_nodes():
+                self.node_genes[node_gene.node_id] = NodeGene(node_gene.node_id, node_gene.node_type)
+
+            for connection in genome_to_clone.connection_genes.values():
+                self.connection_genes[(connection.source_node.node_id, connection.destination_node.node_id)] = \
+                    ConnectionGene( self.node_genes[connection.source_node.node_id],
+                                    self.node_genes[connection.destination_node.node_id],
+                                    connection.weight,
+                                    connection.enabled,
+                                    connection.innovation_number)
+            return
 
         # standard creation of new genome
         if len(connections[0]) == 4:
