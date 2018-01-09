@@ -44,7 +44,7 @@ class Generation:
 
         # each genome gets fitness of it's phenotype
         for (phenotype, fitness) in zip(phenotypes, phenotypes_fitness):
-            phenotypes.get_genome().fitness = fitness
+            phenotype.get_genome().fitness = fitness
 
         # divide each fitness in specie by specie size
         for specie in self.species:
@@ -54,7 +54,7 @@ class Generation:
         generation_fitness = sum(phenotypes_fitness) / float(len(phenotypes_fitness))
 
         # TODO: make 'coefficients' parameters
-        reproduce_coefficients = {
+        mutation_coefficients = {
             'add_connection': 0.3,
             'split_connection': 0.2,
             'change_weight': 0.5,
@@ -80,20 +80,20 @@ class Generation:
 
                 offspring = Genome.reproduce(parent1, parent2)
 
-                offspring.mutate(reproduce_coefficients)
+                offspring.mutate(mutation_coefficients)
 
-                compatibility = offspring.compatibility_distance(specie.get_representative(), compatibility_coefficients)
+                compatibility_distance = offspring.compatibility_distance(specie.get_representative(), compatibility_coefficients)
                 
                 specie_found = False
                 # favor parents' specie
                 # TODO: add compatibility_threshold
-                if compatibility < compatibility_threshold:
+                if compatibility_distance < compatibility_threshold:
                     specie.add_genome(offspring)
                     specie_found = True
                 else:
                     for sp in self.species:
-                        compatibility = offspring.compatibility_distance(sp.get_representative(), compatibility_coefficients)
-                        if compatibility < compatibility_threshold:
+                        compatibility_distance = offspring.compatibility_distance(sp.get_representative(), compatibility_coefficients)
+                        if compatibility_distance < compatibility_threshold:
                             sp.add_genome(offspring)
                             specie_found = True
                             break
@@ -104,7 +104,7 @@ class Generation:
                     self.species[len(self.species)] = new_specie
 
             # remove parents leaving only children in new specie
-            for i in range(specie_parents):
+            for i in specie_parents:
                 del specie[i]
 
 
