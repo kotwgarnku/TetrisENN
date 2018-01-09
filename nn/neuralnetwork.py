@@ -2,7 +2,7 @@ import numpy as np
 
 
 class NeuralNetwork:
-    def __init__(self):
+    def __init__(self, genome=None):
         self._genome = None
         self._connections = {}
         self._neurons = {}
@@ -10,6 +10,10 @@ class NeuralNetwork:
         self._output_size = 0
         self._input_neurons = {}
         self._output_neurons = {}
+        self._genome = genome
+
+        if genome is not None:
+            self.generate_network(genome)
 
     def generate_network(self, genome):
         """
@@ -97,6 +101,8 @@ class NeuralNetwork:
             if(v == False):
                 self._DFSUtil(index + 1, visited)
 
+    def get_genome(self):
+        return self._genome
 
 class Neuron:
     def __init__(self):
