@@ -4,6 +4,7 @@ from threading import Thread
 import random
 from nn.neuralnetwork import NeuralNetwork
 from evolution.genome import Genome
+import math
 
 
 class Evaluate(Thread):
@@ -13,7 +14,11 @@ class Evaluate(Thread):
         self._fitness = None
 
     def run(self):
-        self._fitness = 1
+        self._fitness = 0
+        self._fitness += 5*math.exp(-(self._neural_network.forward([1, 1])[0] - 0)**2)
+        self._fitness += 5*math.exp(-(self._neural_network.forward([1, 0])[0] - 1)**2)
+        self._fitness += 5*math.exp(-(self._neural_network.forward([0, 0])[0] - 0)**2)
+        self._fitness += 5*math.exp(-(self._neural_network.forward([0, 1])[0] - 1)**2)
 
     def join(self):
         Thread.join(self)
@@ -40,7 +45,12 @@ class Generation:
             thread.start()
 
         # wait for all networks to end their tasks
-        phenotypes_fitness = [thread.join() for thread in threads]
+        phenotypes_fitness = []
+
+        for thread in threads:
+            phenotypes_fitness.append(thread.join())
+
+        print(phenotypes_fitness)
 
         # each genome gets fitness of it's phenotype
         for (phenotype, fitness) in zip(phenotypes, phenotypes_fitness):
@@ -59,8 +69,8 @@ class Generation:
                 'add_connection': 0.3,
                 'split_connection': 0.2,
                 'change_weight': 0.5,
-                'new_connection_abs_max_weight': 5.0,
-                'max_weight_mutation': 2.5
+                'new_connection_abs_max_weight': 1.0,
+                'max_weight_mutation': 0.5
             }
         if compatibility_coefficients is None:
             compatibility_coefficients = {
@@ -74,6 +84,8 @@ class Generation:
             specie_offspring_len = round(specie.get_fitness() / self.fitness)
             # TODO: make 'r' a parameter
             parents = specie.get_parents(0.2)
+            if len(parents) == 0:
+                continue
             specie_parents = list(specie.genomes.keys())
 
             for i in range(specie_offspring_len):
@@ -81,7 +93,7 @@ class Generation:
                 parent2 = random.choice(parents)
 
                 offspring = Genome.reproduce(parent1, parent2)
-                print(offspring.connection_genes)
+
                 offspring.mutate(mutation_coefficients)
 
                 compatibility_distance = offspring.compatibility_distance(specie.get_representative(), compatibility_coefficients)
@@ -93,33 +105,34 @@ class Generation:
                     specie.add_genome(offspring)
                     specie_found = True
                 else:
-                    for sp in self.species:
+                    for sp in self.species.values():
+                        if len(sp.genomes) == 0:
+                            continue
                         compatibility_distance = offspring.compatibility_distance(sp.get_representative(), compatibility_coefficients)
                         if compatibility_distance < compatibility_threshold:
                             sp.add_genome(offspring)
                             specie_found = True
                             break
                 if not specie_found:
-                    for current_generation_new_specie in new_species:
-                        for sp in current_generation_new_specie:
-                            compatibility_distance = offspring.compatibility_distance(sp.get_representative(),
-                                                                                      compatibility_coefficients)
-                            if compatibility_distance < compatibility_threshold:
-                                sp.add_genome(offspring)
-                                specie_found = True
-                                break
+                    for sp in new_species:
+                        compatibility_distance = offspring.compatibility_distance(sp.get_representative(),
+                                                                                  compatibility_coefficients)
+                        if compatibility_distance < compatibility_threshold:
+                            sp.add_genome(offspring)
+                            specie_found = True
+                            break
                     if specie_found:
                         continue
                     # create new specie with offspring as it's representative
                     new_specie = Specie()
                     new_specie.add_genome(offspring)
-                    self.species[len(self.species)] = new_specie
                     new_species.append(new_specie)
 
             # remove parents leaving only children in new specie
             for i in specie_parents:
                 del specie.genomes[i]
-
+        for specie in new_species:
+            self.species[len(self.species)] = specie
 
 class Specie:
     def __init__(self):
@@ -151,6 +164,6 @@ class Specie:
         # sort genomes by fitness
         genomes = sorted([genome for genome in self.genomes.values()], key=lambda x: x.fitness, reverse=True)
         # get r% of best-performing genomes
-        genomes = genomes[:int(r*len(genomes))]
+        genomes = genomes[:round(r*len(genomes))]
         shuffle(genomes)
         return genomes
