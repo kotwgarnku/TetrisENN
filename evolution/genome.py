@@ -238,8 +238,8 @@ class Genome:
         :param partner:(Genome) Genome object to mate with
         :param coefficients: dictionary with compatibility distance factors
         """
-        connections_a = self.connection_genes
-        connections_b = partner.connection_genes
+        connections_a = self.connection_genes.values()
+        connections_b = partner.connection_genes.values()
 
         excess_number = evolution.util.count_excess_connection_genes(connections_a, connections_b)
         disjoint_number = evolution.util.count_disjoint_connection_genes(connections_a, connections_b)
