@@ -2,6 +2,7 @@ import unittest
 
 from evolution.generation import Generation, Group
 from evolution.genome import *
+from evolution.logger import Logger
 import math
 
 class TestGroupCase(unittest.TestCase):
@@ -68,6 +69,64 @@ class TestGroupCase(unittest.TestCase):
         self.assertIs(parents[1], self.genome4)
         self.assertIs(parents[2], self.genome7)
 
+    def test_create_phenotypes(self):
+        generation = Generation()
+        generation.groups[0] = self.group
+        generation.create_phenotypes()
+        first_phenotype = generation.phenotypes[0]
+        self.assertEqual(1 in first_phenotype._neurons, True)
+        self.assertEqual(2 in first_phenotype._neurons, True)
+        self.assertEqual(3 in first_phenotype._neurons, True)
+        self.assertEqual(4 in first_phenotype._neurons, True)
+        self.assertEqual(5 in first_phenotype._neurons, False)
+        self.assertEqual(1 in first_phenotype._input_neurons, True)
+        self.assertEqual(2 in first_phenotype._input_neurons, True)
+        self.assertEqual(3 in first_phenotype._input_neurons, False)
+        self.assertEqual(4 in first_phenotype._input_neurons, False)
+        self.assertEqual(5 in first_phenotype._input_neurons, False)
+        self.assertEqual(1 in first_phenotype._output_neurons, False)
+        self.assertEqual(2 in first_phenotype._output_neurons, False)
+        self.assertEqual(3 in first_phenotype._output_neurons, True)
+        self.assertEqual(4 in first_phenotype._output_neurons, False)
+        self.assertEqual(5 in first_phenotype._output_neurons, False)
+        self.assertIs(first_phenotype._genome, self.genome1)
+
+
+class TestLoggerCase(unittest.TestCase):
+    def setUp(self):
+        Group._GROUP_ID = 0
+        Generation._GENERATION_ID = 0
+        self.genome1 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome2 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome3 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome4 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome5 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome6 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome7 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome1.fitness = 2
+        self.genome2.fitness = 0
+        self.genome3.fitness = 22
+        self.genome4.fitness = 13
+        self.genome5.fitness = 2
+        self.genome6.fitness = 6
+        self.genome7.fitness = 8
+        self.group = Group()
+        self.group.add_genome(self.genome1)
+        self.group.add_genome(self.genome2)
+        self.group.add_genome(self.genome3)
+        self.group.add_genome(self.genome4)
+        self.group.add_genome(self.genome5)
+        self.group.add_genome(self.genome6)
+        self.group.add_genome(self.genome7)
+        self.group.adjust_genomes_fitness()
+        self.group.calculate_group_adjusted_fitness()
+        self.logger = Logger()
+        self.generation = Generation([self.group], logger=self.logger)
+        self.generation.create_phenotypes()
+
+    def test_logging(self):
+        self.assertIs(self.logger.log[0].groups_log[0], self.group)
+
 class TestGenerationCase(unittest.TestCase):
 
     # def test_next_generation_the_same(self):
@@ -123,7 +182,7 @@ class TestGenerationCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    firstSuite = unittest.TestLoader().loadTestsFromTestCase(TestSpecieCase)
+    firstSuite = unittest.TestLoader().loadTestsFromTestCase(TestGroupCase)
     secondSuite = unittest.TestLoader().loadTestsFromTestCase(TestGenerationCase)
     unittest.TextTestRunner(verbosity=2).run(firstSuite)
     unittest.TextTestRunner(verbosity=2).run(secondSuite)
