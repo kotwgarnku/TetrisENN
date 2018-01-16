@@ -20,7 +20,7 @@ class Logger:
 
     def _check_if_record_exists(self, id):
         if id not in self.log:
-            self.log[id] = Generation_Log()
+            self.log[id] = Generation_Log(id)
 
 class Generation_Log:
     def __init__(self, id):
