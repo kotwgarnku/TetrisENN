@@ -91,6 +91,7 @@ class TestGroupCase(unittest.TestCase):
         self.assertEqual(5 in first_phenotype._output_neurons, False)
         self.assertIs(first_phenotype._genome, self.genome1)
 
+    #TODO test running phenotypes and getting their fitness scores
 
 class TestLoggerCase(unittest.TestCase):
     def setUp(self):
@@ -126,6 +127,8 @@ class TestLoggerCase(unittest.TestCase):
 
     def test_logging(self):
         self.assertIs(self.logger.log[0].groups_log[0], self.group)
+
+    #TODO test logging fitness scores and other things
 
 class TestGenerationCase(unittest.TestCase):
 

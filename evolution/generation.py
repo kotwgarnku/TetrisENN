@@ -5,9 +5,41 @@ import random
 from nn.neuralnetwork import NeuralNetwork
 from evolution.genome import Genome
 import math
+import numpy as np
+
+class PhenotypesHandler:
+    def __init__(self, phenotypes):
+        self._input = input
+        self._neural_networks = phenotypes
+        self._signal_provider = None
+
+        self._connect_to_signals_provider()
+
+    def run_all_phenotypes(self):
+        #Implementation below is just for mocking
+        for nn in self._neural_networks:
+            nn.forward(np.ones(len(nn._input_neurons)))
+
+        for nn in self._neural_networks:
+            nn._genome.fitness = 1
+
+    def get_phenotypes_fitness_scores(self):
+        phenotypes_fitnesses = []
+        for nn in self._neural_networks:
+            phenotypes_fitnesses.append(nn._genome.fitness)
+
+    def _connect_to_signals_provider(self):
+        """
+        This method connects PhenotypesHandler to some object that will provide it with inputs and that will handle
+        neural networks outputs
+        :return:
+        """
+        #self._signal_provider = Game()
+        pass
 
 
 class Generation:
+    #ID for logging purpose
     _GENERATION_ID = 0
 
     def __init__(self, groups=None, mutation_coefficients=None, compatibility_coefficients=None, compatibility_threshold=6.0, logger=None):
@@ -15,6 +47,8 @@ class Generation:
         self.groups = {}
         self.phenotypes = []
         self.logger = None
+        self.handler = None
+
         self.mutation_coefficients = None
         self.compatibility_coefficients = None
         self.mutation_coefficients = None
@@ -60,10 +94,11 @@ class Generation:
         self.logger.log_phenotypes(self.id, self.phenotypes)
         self.run_phenotypes()
 
+        self.logger.log_phenotypes_fitness_scores(self.id)
         phenotypes_fitness = self.get_phenotypes_fitness()
+
         self.update_genomes_fitness_scores(phenotypes_fitness)
         # TODO make love and reproduce below
-
 
     def create_phenotypes(self):
         for group in self.groups.values():
@@ -71,10 +106,11 @@ class Generation:
                 self.phenotypes.append(NeuralNetwork(genome))
 
     def run_phenotypes(self):
-        pass
+        self.handler = PhenotypesHandler(self.phenotypes)
+        self.handler.run_all_phenotypes()
 
     def get_phenotypes_fitness(self):
-        pass
+        return self.handler.get_phenotypes_fitness_scores()
 
     def update_genomes_fitness_scores(self, phenotypes_fitness):
         pass
@@ -86,6 +122,7 @@ class Generation:
 
 
 class Group:
+    #ID for logging purpose
     _GROUP_ID = 0
 
     def __init__(self):
