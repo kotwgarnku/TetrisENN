@@ -55,9 +55,9 @@ class TestGenomeCase(unittest.TestCase):
         self.assertEqual(nodes[0].node_id, 1)
         self.assertEqual(nodes[1].node_type, 'input')
         self.assertEqual(nodes[1].node_id, 2)
-        self.assertEqual(nodes[2].node_type, 'hidden')
+        self.assertEqual(nodes[2].node_type, 'output')
         self.assertEqual(nodes[2].node_id, 3)
-        self.assertEqual(nodes[3].node_type, 'output')
+        self.assertEqual(nodes[3].node_type, 'hidden')
         self.assertEqual(nodes[3].node_id, 4)
 
     def test_connections_sorting_by_innovation_number(self):
