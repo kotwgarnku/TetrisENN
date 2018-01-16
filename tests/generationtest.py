@@ -1,83 +1,72 @@
 import unittest
 
-from evolution.generation import Specie, Generation
+from evolution.generation import Generation, Group
 from evolution.genome import *
+import math
 
-class TestSpecieCase(unittest.TestCase):
+class TestGroupCase(unittest.TestCase):
+    def setUp(self):
+        self.genome1 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome2 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome3 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome4 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome5 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome6 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome7 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        self.genome1.fitness = 2
+        self.genome2.fitness = 0
+        self.genome3.fitness = 22
+        self.genome4.fitness = 13
+        self.genome5.fitness = 2
+        self.genome6.fitness = 6
+        self.genome7.fitness = 8
+        self.group = Group()
+        self.group.add_genome(self.genome1)
+        self.group.add_genome(self.genome2)
+        self.group.add_genome(self.genome3)
+        self.group.add_genome(self.genome4)
+        self.group.add_genome(self.genome5)
+        self.group.add_genome(self.genome6)
+        self.group.add_genome(self.genome7)
+        self.group.adjust_genomes_fitness()
+        self.group.calculate_group_adjusted_fitness()
 
-    def test_genome_added(self):
-        specie = Specie()
-        specie.add_genome(Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1))
-        specie.add_genome(Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1))
-        specie.add_genome(Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1))
-        self.assertEqual(len(specie.genomes), 3)
+    def test_adjust_genome_fitnesses(self):
+        self.assertAlmostEqual(self.genome1.adjusted_fitness, 0.28571428, 5)
+        self.assertAlmostEqual(self.genome2.adjusted_fitness, 0)
+        self.assertAlmostEqual(self.genome3.adjusted_fitness, 3.14285714, 5)
+        self.assertAlmostEqual(self.genome4.adjusted_fitness, 1.8571428, 5)
+        self.assertAlmostEqual(self.genome5.adjusted_fitness, 0.28571428, 5)
+        self.assertAlmostEqual(self.genome6.adjusted_fitness, 0.85714285, 5)
+        self.assertAlmostEqual(self.genome7.adjusted_fitness, 1.14285714, 5)
+        self.assertAlmostEqual(self.group.group_adjusted_fitness, sum([self.genome1.adjusted_fitness,
+                                               self.genome2.adjusted_fitness,
+                                               self.genome3.adjusted_fitness,
+                                               self.genome4.adjusted_fitness,
+                                               self.genome5.adjusted_fitness,
+                                               self.genome6.adjusted_fitness,
+                                               self.genome7.adjusted_fitness]))
 
-    # def test_genomes_fitness_adjusted(self):
-    #     specie = Specie()
-    #
-    #     g1 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-    #     g1.fitness = 9
-    #     g2 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-    #     g2.fitness = 1
-    #     g3 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-    #     g3.fitness = 3
-    #
-    #     specie.add_genome(g1)
-    #     specie.add_genome(g2)
-    #     specie.add_genome(g3)
-    #
-    #     specie.adjust_fitness()
-    #
-    #     for (key, genome) in specie.genomes.items():
-    #         self.assertAlmostEqual(genome.fitness)
-    #
-    #     self.assertEqual(specie.genomes[0].fitness, 3)
-    #     self.assertAlmostEqual(specie.genomes[1].fitness, 0.333333, 6)
-    #     self.assertEqual(specie.genomes[2].fitness, 1)
+    def test_get_representative(self):
+        for i in range(1000000):
+            gen = self.group.get_representative()
 
-    def test_specie_fitness(self):
-        specie = Specie()
-
-        g1 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-        g1.fitness = 8
-        g2 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-        g2.fitness = 1
-        g3 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-        g3.fitness = 3
-
-        specie.add_genome(g1)
-        specie.add_genome(g2)
-        specie.add_genome(g3)
-
-        specie.adjust_fitness()
-
-        self.assertEqual(specie.get_fitness(), 4)
+    def test_ceil(self):
+        self.assertEqual(math.ceil(0.1*1), 1)
+        self.assertEqual(math.ceil(0.1*2), 1)
+        self.assertEqual(math.ceil(0.1*3), 1)
+        self.assertEqual(math.ceil(0.5*1), 1)
+        self.assertEqual(math.ceil(0.5*3), 2)
+        self.assertEqual(math.ceil(0.1*1), 1)
+        self.assertEqual(math.ceil(0.9*12), 11)
+        self.assertEqual(math.ceil(0.1*0), 0)
+        self.assertEqual(math.ceil(0*11), 0)
 
     def test_get_parents(self):
-        specie = Specie()
-
-        g1 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-        g1.fitness = 9
-        g2 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-        g2.fitness = 1
-        g3 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-        g3.fitness = 3
-        g4 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-        g4.fitness = 7
-        g5 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-        g5.fitness = 8
-        g6 = Genome([[1, 2, 0, True], [1, 3, 0, True]], 1, 1)
-        g6.fitness = 5
-
-        specie.add_genome(g1)
-        specie.add_genome(g2)
-        specie.add_genome(g3)
-        specie.add_genome(g4)
-        specie.add_genome(g5)
-        specie.add_genome(g6)
-
-        self.assertEqual(sorted([sp.fitness for sp in specie.get_parents(0.5)]), [7, 8, 9])
-
+        parents = self.group.get_parents(0.3)
+        self.assertIs(parents[0], self.genome3)
+        self.assertIs(parents[1], self.genome4)
+        self.assertIs(parents[2], self.genome7)
 
 class TestGenerationCase(unittest.TestCase):
 
@@ -109,11 +98,12 @@ class TestGenerationCase(unittest.TestCase):
     #     print(specie.genomes)
     #     #self.assertEqual(generation.species)
 
+    @unittest.skip("skipping for now")
     def test_evolve_xor(self):
 
         generation = Generation()
 
-        specie = Specie()
+        specie = Group()
 
         c1 = ConnectionGene(1, 3, enabled=True)
         c2 = ConnectionGene(2, 3, enabled=True)
@@ -129,7 +119,6 @@ class TestGenerationCase(unittest.TestCase):
         while i < 100:
             generation.create_new_generation()
             i += 1
-        print(generation.species[0].get_representative())
         print(generation.fitness)
 
 
