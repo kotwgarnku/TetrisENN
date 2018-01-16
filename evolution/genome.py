@@ -7,8 +7,6 @@ class Genome:
     """
     Class representing genome in NEAT.
     """
-    _genome_ID = 0
-
     def __init__(self, connections, input_size, output_size):
         """
         Create genome from given informations.
@@ -33,6 +31,7 @@ class Genome:
         self.input_node_ids = []
         self.output_node_ids = []
         self.fitness = None
+        self.adjusted_fitness = None
 
         # standard creation of new genome
         if len(connections[0]) == 4:
@@ -335,7 +334,6 @@ class NodeGene:
     def __init__(self, node_id=-1, node_type='hidden'):
         self.node_id = node_id
         self.node_type = node_type
-
 
 class ConnectionGene:
     _innovation_number = 0
