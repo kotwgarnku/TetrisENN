@@ -150,7 +150,38 @@ class TestGenerationSecondCase(unittest.TestCase):
         generation.adjust_genomes_fitness_scores()
         a = generation.calculate_groups_adjusted_fitness_scores()
         offspring_count = generation.calculate_groups_offsprings(a, sum(a.values()))
+        self.assertEqual(offspring_count[0], 50)
+        self.assertEqual(offspring_count[1], 50)
+        genome1.adjusted_fitness = 1
+        a = generation.calculate_groups_adjusted_fitness_scores()
+        offspring_count = generation.calculate_groups_offsprings(a, sum(a.values()))
+        self.assertEqual(offspring_count[0], 64)
+        self.assertEqual(offspring_count[1], 36)
 
+    def test_making_new_generation(self):
+        Group._GROUP_ID = 0
+        Generation._GENERATION_ID = 0
+        genome1 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome2 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome3 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome4 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome5 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome6 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome7 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        group1 = Group()
+        group2 = Group()
+        group1.add_genome(genome1)
+        group1.add_genome(genome2)
+        group1.add_genome(genome3)
+        group1.add_genome(genome4)
+        group2.add_genome(genome5)
+        group2.add_genome(genome6)
+        group2.add_genome(genome7)
+        generation = Generation([group1, group2])
+        for i in range(100):
+            print(i)
+            generation = generation.create_new_generation()
+        print("Done")
 
 class TestLoggerCase(unittest.TestCase):
     def setUp(self):
