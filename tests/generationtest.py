@@ -30,7 +30,7 @@ class TestGroupCase(unittest.TestCase):
         self.group.add_genome(self.genome6)
         self.group.add_genome(self.genome7)
         self.group.adjust_genomes_fitness()
-        self.group.calculate_group_adjusted_fitness()
+        self.group.calculate_group_adjusted_fitness_score()
 
     def test_adjust_genome_fitnesses(self):
         self.assertAlmostEqual(self.genome1.adjusted_fitness, 0.28571428, 5)
@@ -91,7 +91,66 @@ class TestGroupCase(unittest.TestCase):
         self.assertEqual(5 in first_phenotype._output_neurons, False)
         self.assertIs(first_phenotype._genome, self.genome1)
 
-    #TODO test running phenotypes and getting their fitness scores
+    def test_phenotypes_run(self):
+        generation = Generation([self.group])
+        generation.create_phenotypes()
+        generation.run_phenotypes()
+        losses = generation.get_phenotypes_fitness_scores()
+        self.assertEqual(losses[0], 1)
+        self.assertEqual(losses[6], 1)
+
+    def test_genomes_fitness_score_adjusting(self):
+        genome1 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome2 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome3 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome4 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome5 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome6 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        group1 = Group()
+        group2 = Group()
+        group1.add_genome(genome1)
+        group1.add_genome(genome2)
+        group1.add_genome(genome3)
+        group1.add_genome(genome4)
+        group2.add_genome(genome5)
+        group2.add_genome(genome6)
+        generation = Generation([group1, group2])
+        generation.create_phenotypes()
+        generation.run_phenotypes()
+        generation.update_genomes_fitness_scores(generation.get_phenotypes_fitness_scores())
+        generation.adjust_genomes_fitness_scores()
+        self.assertEqual(genome1.adjusted_fitness, 0.25)
+        self.assertAlmostEqual(genome5.adjusted_fitness, 0.5)
+
+
+class TestGenerationSecondCase(unittest.TestCase):
+    def test_calculating_offsprings(self):
+        Group._GROUP_ID = 0
+        Generation._GENERATION_ID = 0
+        genome1 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome2 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome3 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome4 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome5 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome6 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        genome7 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
+        group1 = Group()
+        group2 = Group()
+        group1.add_genome(genome1)
+        group1.add_genome(genome2)
+        group1.add_genome(genome3)
+        group1.add_genome(genome4)
+        group2.add_genome(genome5)
+        group2.add_genome(genome6)
+        group2.add_genome(genome7)
+        generation = Generation([group1, group2])
+        generation.create_phenotypes()
+        generation.run_phenotypes()
+        generation.update_genomes_fitness_scores(generation.get_phenotypes_fitness_scores())
+        generation.adjust_genomes_fitness_scores()
+        a = generation.calculate_groups_adjusted_fitness_scores()
+        offspring_count = generation.calculate_groups_offsprings(a, sum(a.values()))
+
 
 class TestLoggerCase(unittest.TestCase):
     def setUp(self):
@@ -119,14 +178,12 @@ class TestLoggerCase(unittest.TestCase):
         self.group.add_genome(self.genome5)
         self.group.add_genome(self.genome6)
         self.group.add_genome(self.genome7)
-        self.group.adjust_genomes_fitness()
-        self.group.calculate_group_adjusted_fitness()
         self.logger = Logger()
         self.generation = Generation([self.group], logger=self.logger)
-        self.generation.create_phenotypes()
 
     def test_logging(self):
         self.assertIs(self.logger.log[0].groups_log[0], self.group)
+
 
     #TODO test logging fitness scores and other things
 
