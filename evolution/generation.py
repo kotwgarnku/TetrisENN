@@ -7,6 +7,7 @@ from evolution.genome import Genome
 import math
 import numpy as np
 
+
 class PhenotypesHandler:
     def __init__(self, phenotypes):
         self._input = input
@@ -22,6 +23,13 @@ class PhenotypesHandler:
 
         for nn in self._neural_networks:
             nn._genome.fitness = 1
+
+    def run_all_phenotypes2(self):
+        for nn in self._neural_networks:
+            nn.forward(np.ones(len(nn._input_neurons)))
+
+        for nn in self._neural_networks:
+            nn._genome.fitness = random.uniform(0.1, 8)
 
     def get_phenotypes_fitness_scores(self):
         phenotypes_fitnesses = []
@@ -81,22 +89,30 @@ class Generation:
                 'new_connection_abs_max_weight': 1.0,
                 'max_weight_mutation': 0.5
             }
+        else:
+            self.mutation_coefficients = mutation_coefficients
+
         if compatibility_coefficients is None:
             self.compatibility_coefficients = {
                 'excess_factor': 2.0,
                 'disjoint_factor': 2.0,
                 'weight_difference_factor': 1.0
             }
+        else:
+            self.compatibility_coefficients = compatibility_coefficients
+
         self.compatibility_threshold = compatibility_threshold
         self.r_factor = 0.2
         self.population_size = 100
 
     def create_new_generation(self):
         self.create_phenotypes()
-        self.logger.log_phenotypes(self.id, self.phenotypes)
-        self.run_phenotypes()
+        if self.logger is not None:
+            self.logger.log_phenotypes(self.id, self.phenotypes)
+        self.run_phenotypes2()
 
-        self.logger.log_phenotypes_fitness_scores(self.id)
+        if self.logger is not None:
+            self.logger.log_phenotypes_fitness_scores(self.id)
         phenotypes_fitness = self.get_phenotypes_fitness_scores()
         self.update_genomes_fitness_scores(phenotypes_fitness)
 
@@ -104,10 +120,24 @@ class Generation:
         self.adjust_genomes_fitness_scores()
         group_scores = self.calculate_groups_adjusted_fitness_scores()
         total_generation_score = sum(group_scores.values())
-        self.logger.log_groups_fitness_scores(self.id)
+        if self.logger is not None:
+            self.logger.log_groups_fitness_scores(self.id)
 
         # After calculating all groups fitness scores we calculate the amount of offsprings in each group
         offspring_count = self.calculate_groups_offsprings(group_scores, total_generation_score)
+        if len(offspring_count) != len(self.groups):
+            raise Exception("Length of offspring amount list nad length of groups doesn't match.")
+
+        # And now we create offsprings for every group
+        new_groups = []
+        for (group_key, group_offspring_amount) in offspring_count.items():
+            if group_key not in self.groups:
+                raise Exception("There is no group with such a ID in generation")
+            new_groups.append(Group(group_key, self.get_offsprings_from_group(group_key, group_offspring_amount)))
+
+        # And return new generation
+        return Generation(new_groups, self.mutation_coefficients, self.compatibility_coefficients,
+                          36.0, self.logger)
 
 
     def create_phenotypes(self):
@@ -118,6 +148,10 @@ class Generation:
     def run_phenotypes(self):
         self.handler = PhenotypesHandler(self.phenotypes)
         self.handler.run_all_phenotypes()
+
+    def run_phenotypes2(self):
+        self.handler = PhenotypesHandler(self.phenotypes)
+        self.handler.run_all_phenotypes2()
 
     def get_phenotypes_fitness_scores(self):
         return self.handler.get_phenotypes_fitness_scores()
@@ -142,7 +176,28 @@ class Generation:
         offspring_count = {}
         for group_id, group_score in group_scores.items():
             offspring_count[group_id] = round((float(group_score)/float(total_generation_score)) * self.population_size)
+
+        if(sum(offspring_count.values()) != self.population_size):
+            raise Exception(("Amount of offsprings does not sum up to population size.[Sum = " + str(offspring_count) +
+                            " | Population size: " + str(self.population_size)))
         return offspring_count
+
+    def get_offsprings_from_group(self, group_key, group_offspring_amount):
+        group_to_reproduce = self.groups[group_key]
+        parents = group_to_reproduce.get_parents(self.r_factor)
+        offsprings = []
+
+        while(len(offsprings) != group_offspring_amount):
+            first_parent = random.choice(parents)
+            second_parent = random.choice(parents)
+            # Make a child
+            offspring = Genome.reproduce(first_parent, second_parent)
+            # Mutate it
+            offspring.mutate(self.mutation_coefficients)
+            # Now try to fit it into this group
+            offsprings.append(offspring)
+
+        return offsprings
 
     @staticmethod
     def get_unique_generation_id():
@@ -150,19 +205,25 @@ class Generation:
         return Generation._GENERATION_ID - 1
 
 
-
-
 class Group:
     #ID for logging purpose
     _GROUP_ID = 0
 
-    def __init__(self):
-        self.genomes = []
-        self.group_adjusted_fitness = None
-        self.id = self.get_unique_group_id()
+    def __init__(self, id=None, genomes=None):
+        if id is not None and genomes is not None:
+            self.id = id
+            self.genomes = genomes
+            self.group_adjusted_fitness = None
+        else:
+            self.genomes = []
+            self.group_adjusted_fitness = None
+            self.id = self.get_unique_group_id()
 
     def add_genome(self, genome):
         self.genomes.append(genome)
+
+    def remove_all_genomes(self):
+        self.genomes.clear()
 
     def adjust_genomes_fitness(self):
         """
