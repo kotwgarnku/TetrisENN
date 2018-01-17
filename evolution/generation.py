@@ -27,6 +27,7 @@ class PhenotypesHandler:
         phenotypes_fitnesses = []
         for nn in self._neural_networks:
             phenotypes_fitnesses.append(nn._genome.fitness)
+        return phenotypes_fitnesses
 
     def _connect_to_signals_provider(self):
         """
@@ -68,7 +69,7 @@ class Generation:
         if logger is not None:
             self.logger = logger
             logger.log_coefficients(self.id, self.mutation_coefficients, self.compatibility_coefficients,
-                                self.compatibility_threshold, self.r_factor)
+                                self.compatibility_threshold, self.r_factor, self.population_size)
             logger.log_groups(self.id, self.groups)
 
     def _initialize_coefficients(self, mutation_coefficients, compatibility_coefficients, compatibility_threshold):
@@ -88,6 +89,7 @@ class Generation:
             }
         self.compatibility_threshold = compatibility_threshold
         self.r_factor = 0.2
+        self.population_size = 100
 
     def create_new_generation(self):
         self.create_phenotypes()
@@ -95,10 +97,18 @@ class Generation:
         self.run_phenotypes()
 
         self.logger.log_phenotypes_fitness_scores(self.id)
-        phenotypes_fitness = self.get_phenotypes_fitness()
-
+        phenotypes_fitness = self.get_phenotypes_fitness_scores()
         self.update_genomes_fitness_scores(phenotypes_fitness)
-        # TODO make love and reproduce below
+
+        # After running all phenotypes and getting their fitness scores we can start reproducing
+        self.adjust_genomes_fitness_scores()
+        group_scores = self.calculate_groups_adjusted_fitness_scores()
+        total_generation_score = sum(group_scores.values())
+        self.logger.log_groups_fitness_scores(self.id)
+
+        # After calculating all groups fitness scores we calculate the amount of offsprings in each group
+        offspring_count = self.calculate_groups_offsprings(group_scores, total_generation_score)
+
 
     def create_phenotypes(self):
         for group in self.groups.values():
@@ -109,16 +119,37 @@ class Generation:
         self.handler = PhenotypesHandler(self.phenotypes)
         self.handler.run_all_phenotypes()
 
-    def get_phenotypes_fitness(self):
+    def get_phenotypes_fitness_scores(self):
         return self.handler.get_phenotypes_fitness_scores()
 
-    def update_genomes_fitness_scores(self, phenotypes_fitness):
-        pass
+    def update_genomes_fitness_scores(self, phenotypes_fitness_scores):
+        for phenotype, phenotype_score in zip(self.phenotypes, phenotypes_fitness_scores):
+            if phenotype_score is None:
+                raise Exception("Fitness score is none")
+            phenotype._genome.fitness = phenotype_score
+
+    def adjust_genomes_fitness_scores(self):
+        for group in self.groups.values():
+            group.adjust_genomes_fitness()
+
+    def calculate_groups_adjusted_fitness_scores(self):
+        groups_adjusted_fitness_scores = {}
+        for group in self.groups.values():
+            groups_adjusted_fitness_scores[group.id] = group.calculate_group_adjusted_fitness_score()
+        return groups_adjusted_fitness_scores
+
+    def calculate_groups_offsprings(self, group_scores, total_generation_score):
+        offspring_count = {}
+        for group_id, group_score in group_scores.items():
+            offspring_count[group_id] = round((float(group_score)/float(total_generation_score)) * self.population_size)
+        return offspring_count
 
     @staticmethod
     def get_unique_generation_id():
         Generation._GENERATION_ID += 1
         return Generation._GENERATION_ID - 1
+
+
 
 
 class Group:
@@ -127,7 +158,6 @@ class Group:
 
     def __init__(self):
         self.genomes = []
-        self.group_fitness = None
         self.group_adjusted_fitness = None
         self.id = self.get_unique_group_id()
 
@@ -141,7 +171,7 @@ class Group:
         for genome in self.genomes:
             genome.adjusted_fitness = genome.fitness/float(len(self.genomes))
 
-    def calculate_group_adjusted_fitness(self):
+    def calculate_group_adjusted_fitness_score(self):
         """
         Sum all of genomes adjusted fitnesses
         :return:
@@ -150,6 +180,7 @@ class Group:
         for genome in self.genomes:
             total += genome.adjusted_fitness
         self.group_adjusted_fitness = total
+        return total
 
     def get_representative(self):
         if not self.genomes:
