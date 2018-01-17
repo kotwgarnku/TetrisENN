@@ -128,17 +128,21 @@ class Generation:
         if len(offspring_count) != len(self.groups):
             raise Exception("Length of offspring amount list nad length of groups doesn't match.")
 
+        self._remove_groups_without_offsprings(offspring_count)
+
         # And now we create offsprings for every group
         new_groups = []
+        left_genomes = []
         for (group_key, group_offspring_amount) in offspring_count.items():
             if group_key not in self.groups:
                 raise Exception("There is no group with such a ID in generation")
-            new_groups.append(Group(group_key, self.get_offsprings_from_group(group_key, group_offspring_amount)))
-
+            new_groups.append(Group(group_key, self.get_offsprings_from_group(group_key, group_offspring_amount, left_genomes)))
+        print("left genomes: " + str(len(left_genomes)))
+        self._handle_left_genomes(new_groups, left_genomes)
+        print("left genomes: " + str(len(left_genomes)))
         # And return new generation
         return Generation(new_groups, self.mutation_coefficients, self.compatibility_coefficients,
-                          36.0, self.logger)
-
+                          self.compatibility_threshold, self.logger)
 
     def create_phenotypes(self):
         for group in self.groups.values():
@@ -177,12 +181,19 @@ class Generation:
         for group_id, group_score in group_scores.items():
             offspring_count[group_id] = round((float(group_score)/float(total_generation_score)) * self.population_size)
 
-        if(sum(offspring_count.values()) != self.population_size):
-            raise Exception(("Amount of offsprings does not sum up to population size.[Sum = " + str(offspring_count) +
-                            " | Population size: " + str(self.population_size)))
+        #if(sum(offspring_count.values()) != self.population_size):
+         #   raise Exception(("Amount of offsprings does not sum up to population size.[Sum = " + str(sum(offspring_count.values())) +
+          #                  " | Population size: " + str(self.population_size)))
         return offspring_count
 
-    def get_offsprings_from_group(self, group_key, group_offspring_amount):
+    def _remove_groups_without_offsprings(self, offspring_count):
+        # Check which groups have 0 offspring count
+        groups_to_delete = [key for key, value in offspring_count.items() if value == 0]
+        # And remove them
+        for group_id in groups_to_delete:
+            del offspring_count[group_id]
+
+    def get_offsprings_from_group(self, group_key, group_offspring_amount, left_genomes):
         group_to_reproduce = self.groups[group_key]
         parents = group_to_reproduce.get_parents(self.r_factor)
         offsprings = []
@@ -195,14 +206,68 @@ class Generation:
             # Mutate it
             offspring.mutate(self.mutation_coefficients)
             # Now try to fit it into this group
-            offsprings.append(offspring)
+            if self._is_group_fitting_for_offspring(group_to_reproduce.get_representative(), offspring):
+                offsprings.append(offspring)
+            else:
+                left_genomes.append(offspring)
 
         return offsprings
+
+    def _is_group_fitting_for_offspring(self, representative, offspring):
+        return offspring.compatibility_distance(representative, self.compatibility_coefficients) < self.compatibility_threshold
+
+    def _handle_left_genomes(self, new_groups, left_genomes):
+        genomes_to_remove = []
+        # Check if genome fits in one of existing groups
+        left_genomes2 = left_genomes
+
+        for genome in left_genomes:
+            for group in new_groups:
+                # If it fits add genome to group and to list of genomes already handled
+                if self._is_group_fitting_for_offspring(genome, group.get_representative()):
+                    group.add_genome(genome)
+                    genomes_to_remove.append(genome)
+                    break
+
+        # Remove genomes that have been assigned to already existing groups
+        for genome in genomes_to_remove:
+            left_genomes.remove(genome)
+
+        # Now create new groups
+        super_fresh_groups = []
+        genomes_to_remove.clear()
+        for genome in left_genomes:
+            for group in super_fresh_groups:
+                # If genome fits into one of new groups add it to it and also add it to list of handled genomes
+                if self._is_group_fitting_for_offspring(genome, group.get_representative()):
+                    group.add_genome(genome)
+                    genomes_to_remove.append(genome)
+                    break
+
+            # If we put our genome in some new group continue
+            if genome in genomes_to_remove:
+                continue
+            # If genome did not fit to one of new groups create new group for it
+            super_fresh_group = Group()
+            super_fresh_group.add_genome(genome)
+            super_fresh_groups.append(super_fresh_group)
+            genomes_to_remove.append(genome)
+
+        for genome in genomes_to_remove:
+            left_genomes.remove(genome)
+        #Just for the sake of sanity
+        if len(left_genomes) != 0:
+            raise Exception("Some left genome wasn't handled")
+
+        # Add new groups to list of all groups
+        new_groups.extend(super_fresh_groups)
 
     @staticmethod
     def get_unique_generation_id():
         Generation._GENERATION_ID += 1
         return Generation._GENERATION_ID - 1
+
+
 
 
 class Group:
