@@ -26,10 +26,13 @@ class PhenotypesHandler:
 
     def run_all_phenotypes2(self):
         for nn in self._neural_networks:
-            nn.forward(np.ones(len(nn._input_neurons)))
-
-        for nn in self._neural_networks:
-            nn._genome.fitness = random.uniform(0.1, 8)
+            a = np.ones(4)
+            b = np.random.random(4) < 0.5
+            Y = nn.forward(np.concatenate((a, b)))
+            fitness = 0
+            for y, y_d in zip(Y, np.logical_xor(a, b)):
+                fitness += 5*np.exp(-(y - y_d)**2)
+            nn._genome.fitness = fitness
 
     def get_phenotypes_fitness_scores(self):
         phenotypes_fitnesses = []
