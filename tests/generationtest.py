@@ -5,6 +5,9 @@ from evolution.genome import *
 from evolution.logger import Logger
 import math
 
+from nn.neuralnetwork import NeuralNetwork
+
+
 class TestGroupCase(unittest.TestCase):
     def setUp(self):
         self.genome1 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
@@ -247,12 +250,58 @@ class TestGenerationCase(unittest.TestCase):
     #     print(generation.species[0].genomes)
     #     print(specie.genomes)
     #     #self.assertEqual(generation.species)
-
-    def test_evolve_xor(self):
-        print("testing xor")
+    @unittest.skip("skipping")
+    def test_simple_xor(self):
+        print("testing simple xor")
         Group._GROUP_ID = 0
         Generation._GENERATION_ID = 0
-        generation = Generation()
+        specie = Group()
+        c1 = ConnectionGene(1, 3, enabled=True)
+        c2 = ConnectionGene(2, 3, enabled=True)
+        for i in range(100):
+            specie.add_genome(Genome([[1, 3, random.normalvariate(mu=0.0, sigma=1.0), True], [2, 3, random.normalvariate(mu=0.0, sigma=1.0), True]], 2, 1))
+
+        mutation_coefficients = {
+            'add_connection': 0.5,
+            'split_connection': 0.2,
+            'change_weight': 0.8,
+            'new_connection_abs_max_weight': 1.0,
+            'max_weight_mutation': 0.5
+        }
+        compatibility_coefficients = {
+            'excess_factor': 1.0,
+            'disjoint_factor': 1.0,
+            'weight_difference_factor': 2.0
+        }
+        log = Logger()
+        gen = Generation([specie], mutation_coefficients=mutation_coefficients,
+                         compatibility_coefficients=compatibility_coefficients, logger=log)
+
+        i = 1
+        while i < 150:
+            print(i)
+            gen = gen.create_new_generation()
+            i += 1
+        best_nn = NeuralNetwork(Generation.best_genome)
+        a = (best_nn.forward([0.0, 0.0]))
+        b = (best_nn.forward([0.0, 1.0]))
+        c = (best_nn.forward([1.0, 0.0]))
+        d =(best_nn.forward([1.0, 1.0]))
+        print(a)
+        print(b)
+        print(c)
+        print(d)
+
+
+        print("HEHEHEHEHE")
+        print(4.0 - (a[0]-0)**2 - (b[0]-1)**2 - (c[0]-1)**2 - (d[0]-0)**2)
+        print(best_nn._genome.fitness)
+
+
+    def test_evolve_xor(self):
+        print("testing advanced xor")
+        Group._GROUP_ID = 0
+        Generation._GENERATION_ID = 0
 
         specie = Group()
 
@@ -291,23 +340,37 @@ class TestGenerationCase(unittest.TestCase):
         c33 = ConnectionGene(2, 3, enabled=True)
 
         for i in range(100):
-            specie.add_genome(Genome([[1, 9, random.random(), True, 0], [1, 10, random.random(), True, 1], [1, 11, random.random(), True, 2], [1, 12, random.random(), True, 3],
-                                      [2, 9, random.random(), True, 4], [2, 10, random.random(), True, 5], [2, 11, random.random(), True, 6], [2, 12, random.random(), True, 7],
-                                      [3, 9, random.random(), True, 8], [3, 10, random.random(), True, 9], [3, 11, random.random(), True, 10], [3, 12, random.random(), True, 11],
-                                      [4, 9, random.random(), True, 12], [4, 10, random.random(), True, 13], [4, 11, random.random(), True, 14], [4, 12, random.random(), True, 15],
-                                      [5, 9, random.random(), True, 16], [5, 10, random.random(), True, 17], [5, 11, random.random(), True, 18], [5, 12, random.random(), True, 19],
-                                      [6, 9, random.random(), True, 20], [6, 10, random.random(), True, 21], [6, 11, random.random(), True, 22], [6, 12, random.random(), True, 23],
-                                      [7, 9, random.random(), True, 24], [7, 10, random.random(), True, 25], [7, 11, random.random(), True, 26], [7, 12, random.random(), True, 27],
-                                      [8, 9, random.random(), True, 28], [8, 10, random.random(), True, 29], [8, 11, random.random(), True, 30], [8, 12, random.random(), True, 31]], 8, 4))
+            specie.add_genome(Genome([[1, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [1, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [1, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [1, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
+                                      [2, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [2, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [2, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [2, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
+                                      [3, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [3, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [3, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [3, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
+                                      [4, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [4, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [4, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [4, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
+                                      [5, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [5, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [5, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [5, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
+                                      [6, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [6, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [6, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [6, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
+                                      [7, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [7, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [7, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [7, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
+                                      [8, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [8, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [8, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [8, 12, random.normalvariate(mu=0.0, sigma=1.0), True]], 8, 4))
 
-        generation.groups[0] = specie
+        mutation_coefficients = {
+                'add_connection': 0.5,
+                'split_connection': 0.2,
+                'change_weight': 0.8,
+                'new_connection_abs_max_weight': 1.0,
+                'max_weight_mutation': 0.25
+            }
+        compatibility_coefficients = {
+            'excess_factor': 1.0,
+            'disjoint_factor': 1.0,
+            'weight_difference_factor': 0.5
+        }
+        gen = Generation([specie], mutation_coefficients=mutation_coefficients,
+                         compatibility_coefficients=compatibility_coefficients)
 
-        generation.create_new_generation()
-
+        gen.create_new_generation()
         i = 1
-        while i < 50:
-            print(i)
-            generation = generation.create_new_generation()
+        while i < 100:
+            gen = gen.create_new_generation()
+            i += 1
+        best_nn = Generation.best_phenotype
+        print(best_nn.forward([0, 1, 1, 0, 0, 1, 1, 0]))
 
 
 
