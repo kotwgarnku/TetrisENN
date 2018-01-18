@@ -132,9 +132,9 @@ class TetrisApp(object):
 		
 		self.screen = pygame.display.set_mode((self.width, self.height))
 		pygame.event.set_blocked(pygame.MOUSEMOTION) # We do not need
-		                                             # mouse movement
-		                                             # events, so we
-		                                             # block them.
+													 # mouse movement
+													 # events, so we
+													 # block them.
 		self.next_stone = tetris_shapes[rand(len(tetris_shapes))]
 		self.init_game()
 
@@ -156,8 +156,8 @@ class TetrisApp(object):
 		self.stone_y = 0
 		
 		if check_collision(self.board,
-		                   self.stone,
-		                   (self.stone_x, self.stone_y)):
+						   self.stone,
+						   (self.stone_x, self.stone_y)):
 			self.gameover = True
 	
 	def init_game(self):
@@ -227,8 +227,8 @@ class TetrisApp(object):
 			if new_x > cols - len(self.stone[0]):
 				new_x = cols - len(self.stone[0])
 			if not check_collision(self.board,
-			                       self.stone,
-			                       (new_x, self.stone_y)):
+								   self.stone,
+								   (new_x, self.stone_y)):
 				self.stone_x = new_x
 	def quit(self):
 		self.center_msg("Exiting...")
@@ -240,8 +240,8 @@ class TetrisApp(object):
 			self.score += 1 if manual else 0
 			self.stone_y += 1
 			if check_collision(self.board,
-			                   self.stone,
-			                   (self.stone_x, self.stone_y)):
+							   self.stone,
+							   (self.stone_x, self.stone_y)):
 				self.board = join_matrixes(
 				  self.board,
 				  self.stone,
@@ -270,8 +270,8 @@ class TetrisApp(object):
 		if not self.gameover and not self.paused:
 			new_stone = rotate_clockwise(self.stone)
 			if not check_collision(self.board,
-			                       new_stone,
-			                       (self.stone_x, self.stone_y)):
+								   new_stone,
+								   (self.stone_x, self.stone_y)):
 				self.stone = new_stone
 	
 	def toggle_pause(self):
@@ -301,6 +301,9 @@ class TetrisApp(object):
 		while 1:
 			self.screen.fill((0,0,0))
 			if self.gameover:
+				print("closing socket")
+				self.sock.close()
+				self.quit()
 				self.center_msg("""Game Over!\nYour score: %d
 Press space to continue""" % self.score)
 			else:
@@ -340,7 +343,16 @@ Press space to continue""" % self.score)
 				message = (self.score, self.board)
 				print('sending "{}"'.format(message))
 				self.sock.sendall(pickle.dumps(message))
-
+				# receive move
+				total_data = []
+				while True:
+					# receive data
+					data = self.sock.recv(16)
+					total_data.append(data)
+					if not data:
+						break
+				move = pickle.loads(b''.join(total_data))
+				key_actions[move]()
 				# amount_received = 0
 				# amount_expected = len(message)
 				
@@ -348,12 +360,8 @@ Press space to continue""" % self.score)
 				# 	data = sock.recv(16)
 				# 	amount_received += len(data)
 				# 	print >>sys.stderr, 'received "{}"'.format(data)
-
-			finally:
-				print('closing socket')
-				self.sock.close()
-			break
-	
+			except socket.error:
+				print(socket.error.msg)
 			dont_burn_my_cpu.tick(maxfps)
 
 if __name__ == '__main__':
