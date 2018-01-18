@@ -25,14 +25,28 @@ class PhenotypesHandler:
             nn._genome.fitness = 1
 
     def run_all_phenotypes2(self):
+        if Generation.best_genome is None:
+            Generation.best_genome = self._neural_networks[0]._genome
+
         for nn in self._neural_networks:
-            a = np.ones(4)
-            b = np.random.random(4) < 0.5
-            Y = nn.forward(np.concatenate((a, b)))
-            fitness = 0
-            for y, y_d in zip(Y, np.logical_xor(a, b)):
-                fitness += 5*np.exp(-(y - y_d)**2)
-            nn._genome.fitness = fitness
+            fitness = 4.0
+
+            Y1 = nn.forward([0.0, 0.0])
+            fitness -= ((Y1[0] - 0) ** 2)
+
+            Y2 = nn.forward([0.0, 1.0])
+            fitness -= ((Y2[0] - 1) ** 2)
+
+            Y3 = nn.forward([1.0, 0.0])
+            fitness -= ((Y3[0] - 1) ** 2)
+
+            Y4 = nn.forward([1.0, 1.0])
+            fitness -= ((Y4[0] - 0) ** 2)
+
+            nn._genome.fitness = (fitness)
+            if fitness > Generation.best_genome.fitness:
+                Generation.best_genome = nn._genome
+
 
     def get_phenotypes_fitness_scores(self):
         phenotypes_fitnesses = []
@@ -52,6 +66,7 @@ class PhenotypesHandler:
 
 class Generation:
     #ID for logging purpose
+    best_genome = None
     _GENERATION_ID = 0
 
     def __init__(self, groups=None, mutation_coefficients=None, compatibility_coefficients=None, compatibility_threshold=6.0, logger=None):
@@ -132,6 +147,7 @@ class Generation:
             raise Exception("Length of offspring amount list nad length of groups doesn't match.")
 
         self._remove_groups_without_offsprings(offspring_count)
+        self._remove_stale_groups(offspring_count)
 
         # And now we create offsprings for every group
         new_groups = []
@@ -140,9 +156,7 @@ class Generation:
             if group_key not in self.groups:
                 raise Exception("There is no group with such a ID in generation")
             new_groups.append(Group(group_key, self.get_offsprings_from_group(group_key, group_offspring_amount, left_genomes)))
-        print("left genomes: " + str(len(left_genomes)))
         self._handle_left_genomes(new_groups, left_genomes)
-        print("left genomes: " + str(len(left_genomes)))
         # And return new generation
         return Generation(new_groups, self.mutation_coefficients, self.compatibility_coefficients,
                           self.compatibility_threshold, self.logger)
@@ -196,6 +210,37 @@ class Generation:
         for group_id in groups_to_delete:
             del offspring_count[group_id]
 
+    def _remove_stale_groups(self, offspring_count):
+        if(len(self.groups) < 10):
+            return
+        if self.id < 5:
+            return
+        if self.id < 20:
+            val = 0.01
+        if self.id < 80:
+            val = 0.005
+        if self.id < 120:
+            val = 0.002
+        if self.id < 200:
+            val = 0.001
+
+        if self.logger is None:
+            return
+        val = 0.005
+        groups_to_remove = []
+        groups_to_check = [self.groups[key] for key in offspring_count.keys()]
+        for group in groups_to_check:
+            if group.id in self.logger.log[self.id - 5].groups_fitness_scores_log:
+                last_fitness_score = self.logger.log[self.id - 5].groups_fitness_scores_log[group.id][0][2]
+                diff = abs((group.group_adjusted_fitness - last_fitness_score)/list(self.logger.log[self.id - 5].groups_fitness_scores_log.values())[0][0][2])
+                if diff < val:
+                    groups_to_remove.append(group)
+                    continue
+        print("remove: " + str(len(groups_to_remove)))
+        for group in groups_to_remove:
+            del offspring_count[group.id]
+
+
     def get_offsprings_from_group(self, group_key, group_offspring_amount, left_genomes):
         group_to_reproduce = self.groups[group_key]
         parents = group_to_reproduce.get_parents(self.r_factor)
@@ -217,6 +262,7 @@ class Generation:
         return offsprings
 
     def _is_group_fitting_for_offspring(self, representative, offspring):
+        #print(str(offspring.compatibility_distance(representative, self.compatibility_coefficients)))
         return offspring.compatibility_distance(representative, self.compatibility_coefficients) < self.compatibility_threshold
 
     def _handle_left_genomes(self, new_groups, left_genomes):
@@ -261,7 +307,6 @@ class Generation:
         #Just for the sake of sanity
         if len(left_genomes) != 0:
             raise Exception("Some left genome wasn't handled")
-
         # Add new groups to list of all groups
         new_groups.extend(super_fresh_groups)
 
@@ -269,8 +314,6 @@ class Generation:
     def get_unique_generation_id():
         Generation._GENERATION_ID += 1
         return Generation._GENERATION_ID - 1
-
-
 
 
 class Group:

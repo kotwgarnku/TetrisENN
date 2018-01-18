@@ -54,6 +54,7 @@ class NeuralNetwork:
         Returns value of neural network output after forward propagation.
         :param X: Vector of inputs
         """
+        self._clear_neurons()
         if len(X) != self._input_size:
             raise Exception("Expected {!s} inputs, got {!s} instead".format(self._input_size, len(X)))
         for index in range(1, self._input_size + 1):
@@ -71,6 +72,10 @@ class NeuralNetwork:
         for index in range(self._input_size + 1, self._input_size + self._output_size + 1):
             y.append(self._output_neurons[index].get_output_signal())
         return y
+
+    def _clear_neurons(self):
+        for neuron in self._neurons.values():
+            neuron._input_signals.clear()
 
     def _DFSUtil(self, v, visited):
         visited[v-1] = True
