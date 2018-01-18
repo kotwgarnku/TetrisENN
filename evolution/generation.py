@@ -6,7 +6,79 @@ from nn.neuralnetwork import NeuralNetwork
 from evolution.genome import Genome
 import math
 import numpy as np
+import os
+import sys
+import socket
+import subprocess
+import pickle
 
+class Evaluate(Thread):
+    SOCKET_ID = 0
+
+    @staticmethod
+    def get_socket_id():
+        Evaluate.SOCKET_ID += 1
+        return Evaluate.SOCKET_ID - 1
+
+    def __init__(self, nn):
+        Thread.__init__(self)
+        self._neural_network = nn
+        self._fitness = 0
+
+    def calculateFitness(self):
+        pass
+
+    def run(self):
+        address = '/tmp/{}'.format(Evaluate.get_socket_id())
+
+        # Create a UDS socket
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+
+        # Make sure the socket does not already exist
+        try:
+            os.unlink(address)
+        except OSError:
+            if os.path.exists(address):
+                raise
+
+        # Bind the socket to the port
+        print('starting up on {}'.format(address))
+        sock.bind(address)
+        # Listen for incoming connections
+        sock.listen(1)
+
+        # run tetris game and give it socket address
+        subprocess.Popen(['python3', '../gist.py', address])
+
+        # Wait for a connection
+        print('waiting for a connection')
+        connection, client_address = sock.accept()
+
+        try:
+            print('connection from', client_address)
+
+            total_data = []
+            while True:
+                # receive data
+                data = connection.recv(16)
+                total_data.append(data)
+                if not data:
+                    break
+
+            # convert data to list of inputs
+            print('received "{}"'.format(pickle.loads(b''.join(total_data))))
+        finally:
+            # Clean up the connection
+            print('closing')
+            connection.close()
+            sock.close()
+            os.unlink(address)
+
+        self._fitness = 1
+
+    def join(self):
+        Thread.join(self)
+        return self._fitness
 
 class PhenotypesHandler:
     def __init__(self, phenotypes):
@@ -23,6 +95,30 @@ class PhenotypesHandler:
 
         for nn in self._neural_networks:
             nn._genome.fitness = 1
+
+    def run_all_phenotypes3(self):
+        if Generation.best_genome is None:
+            Generation.best_genome = self._neural_networks[0]._genome
+
+        #Implementation below is just for mocking
+        threads = [Evaluate(nn) for nn in self._neural_networks]
+
+        for thread in threads:
+            thread.start()
+
+        phenotypes_fitness = []
+
+        for thread in threads:
+            phenotypes_fitness.append(thread.join())
+
+        print(phenotypes_fitness)
+
+        # each genome gets fitness of it's phenotype
+        for (phenotype, fitness) in zip(self._neural_networks, phenotypes_fitness):
+            phenotype._genome.fitness = fitness
+
+            if fitness > Generation.best_genome.fitness:
+                Generation.best_genome = phenotype._genome
 
     def run_all_phenotypes2(self):
         if Generation.best_genome is None:
@@ -121,13 +217,13 @@ class Generation:
 
         self.compatibility_threshold = compatibility_threshold
         self.r_factor = 0.2
-        self.population_size = 100
+        self.population_size = 10
 
     def create_new_generation(self):
         self.create_phenotypes()
         if self.logger is not None:
             self.logger.log_phenotypes(self.id, self.phenotypes)
-        self.run_phenotypes2()
+        self.run_phenotypes3()
 
         if self.logger is not None:
             self.logger.log_phenotypes_fitness_scores(self.id)
@@ -173,6 +269,10 @@ class Generation:
     def run_phenotypes2(self):
         self.handler = PhenotypesHandler(self.phenotypes)
         self.handler.run_all_phenotypes2()
+
+    def run_phenotypes3(self):
+        self.handler = PhenotypesHandler(self.phenotypes)
+        self.handler.run_all_phenotypes3()
 
     def get_phenotypes_fitness_scores(self):
         return self.handler.get_phenotypes_fitness_scores()

@@ -127,6 +127,7 @@ class TestGroupCase(unittest.TestCase):
 
 
 class TestGenerationSecondCase(unittest.TestCase):
+    @unittest.skip("skipping")
     def test_calculating_offsprings(self):
         Group._GROUP_ID = 0
         Generation._GENERATION_ID = 0
@@ -250,7 +251,6 @@ class TestGenerationCase(unittest.TestCase):
     #     print(generation.species[0].genomes)
     #     print(specie.genomes)
     #     #self.assertEqual(generation.species)
-    @unittest.skip("skipping")
     def test_simple_xor(self):
         print("testing simple xor")
         Group._GROUP_ID = 0
@@ -258,7 +258,7 @@ class TestGenerationCase(unittest.TestCase):
         specie = Group()
         c1 = ConnectionGene(1, 3, enabled=True)
         c2 = ConnectionGene(2, 3, enabled=True)
-        for i in range(100):
+        for i in range(10):
             specie.add_genome(Genome([[1, 3, random.normalvariate(mu=0.0, sigma=1.0), True], [2, 3, random.normalvariate(mu=0.0, sigma=1.0), True]], 2, 1))
 
         mutation_coefficients = {
@@ -278,7 +278,7 @@ class TestGenerationCase(unittest.TestCase):
                          compatibility_coefficients=compatibility_coefficients, logger=log)
 
         i = 1
-        while i < 150:
+        while i < 2:
             print(i)
             gen = gen.create_new_generation()
             i += 1
@@ -286,7 +286,7 @@ class TestGenerationCase(unittest.TestCase):
         a = (best_nn.forward([0.0, 0.0]))
         b = (best_nn.forward([0.0, 1.0]))
         c = (best_nn.forward([1.0, 0.0]))
-        d =(best_nn.forward([1.0, 1.0]))
+        d = (best_nn.forward([1.0, 1.0]))
         print(a)
         print(b)
         print(c)
@@ -297,7 +297,7 @@ class TestGenerationCase(unittest.TestCase):
         print(4.0 - (a[0]-0)**2 - (b[0]-1)**2 - (c[0]-1)**2 - (d[0]-0)**2)
         print(best_nn._genome.fitness)
 
-
+    @unittest.skip("skipping")
     def test_evolve_xor(self):
         print("testing advanced xor")
         Group._GROUP_ID = 0
@@ -339,7 +339,7 @@ class TestGenerationCase(unittest.TestCase):
         c31 = ConnectionGene(2, 3, enabled=True)
         c33 = ConnectionGene(2, 3, enabled=True)
 
-        for i in range(100):
+        for i in range(10):
             specie.add_genome(Genome([[1, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [1, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [1, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [1, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
                                       [2, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [2, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [2, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [2, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
                                       [3, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [3, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [3, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [3, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
@@ -366,7 +366,7 @@ class TestGenerationCase(unittest.TestCase):
 
         gen.create_new_generation()
         i = 1
-        while i < 100:
+        while i < 2:
             gen = gen.create_new_generation()
             i += 1
         best_nn = Generation.best_phenotype
@@ -375,7 +375,7 @@ class TestGenerationCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    firstSuite = unittest.TestLoader().loadTestsFromTestCase(TestGroupCase)
+    # firstSuite = unittest.TestLoader().loadTestsFromTestCase(TestGroupCase)
     secondSuite = unittest.TestLoader().loadTestsFromTestCase(TestGenerationCase)
-    unittest.TextTestRunner(verbosity=2).run(firstSuite)
+    # unittest.TextTestRunner(verbosity=2).run(firstSuite)
     unittest.TextTestRunner(verbosity=2).run(secondSuite)
