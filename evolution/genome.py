@@ -8,6 +8,7 @@ class Genome:
     """
     Class representing genome in NEAT.
     """
+
     def __init__(self, connections, input_size, output_size):
         """
         Create genome from given informations.
@@ -179,11 +180,12 @@ class Genome:
         source_node = self.node_genes[source_id]
         destination_id = new_connection[1]
         destination_node = self.node_genes[destination_id]
-        weight = random.normalvariate(mu=0.0, sigma=max_weight/2)
+        weight = random.normalvariate(mu=0.0, sigma=max_weight / 2)
         enable = True
 
         # create new connection
-        self.connection_genes[(source_id, destination_id)] = ConnectionGene(source_node, destination_node, weight, enable)
+        self.connection_genes[(source_id, destination_id)] = ConnectionGene(source_node, destination_node, weight,
+                                                                            enable)
 
     def _mutate_split_connection(self):
         connection = self._get_random_enabled_connection()
@@ -229,7 +231,7 @@ class Genome:
 
         # generate new weight by adding value from N(0, MAX/2) -> chance for value exceeding MAX is ~2%
         # chance for value exceeding MAX twice is 0.003%
-        connection.weight = connection.weight + random.normalvariate(mu=0.0, sigma=max_weight_change/2)
+        connection.weight = connection.weight + random.normalvariate(mu=0.0, sigma=max_weight_change / 2)
 
     def compatibility_distance(self, partner, coefficients):
         """
@@ -356,9 +358,6 @@ class NodeGene:
     def __init__(self, node_id=-1, node_type='hidden'):
         self.node_id = node_id
         self.node_type = node_type
-
-    def _json(self):
-        return json.dumps(self.__dict__)
 
 
 class ConnectionGene:
