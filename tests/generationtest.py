@@ -178,9 +178,9 @@ class TestGenerationSecondCase(unittest.TestCase):
         group2.add_genome(genome6)
         group2.add_genome(genome7)
         generation = Generation([group1, group2])
-        for i in range(100):
-            print(i)
-            generation = generation.create_new_generation()
+   #     for i in range(100):
+    #        print(i)
+     #       generation = generation.create_new_generation()
         print("Done")
 
 class TestLoggerCase(unittest.TestCase):
@@ -248,28 +248,67 @@ class TestGenerationCase(unittest.TestCase):
     #     print(specie.genomes)
     #     #self.assertEqual(generation.species)
 
-    @unittest.skip("skipping for now")
     def test_evolve_xor(self):
-
+        print("testing xor")
+        Group._GROUP_ID = 0
+        Generation._GENERATION_ID = 0
         generation = Generation()
 
         specie = Group()
 
         c1 = ConnectionGene(1, 3, enabled=True)
         c2 = ConnectionGene(2, 3, enabled=True)
+        c3 = ConnectionGene(2, 3, enabled=True)
+        c4 = ConnectionGene(2, 3, enabled=True)
+        c5 = ConnectionGene(2, 3, enabled=True)
+        c6 = ConnectionGene(2, 3, enabled=True)
+        c7 = ConnectionGene(2, 3, enabled=True)
+        c8 = ConnectionGene(2, 3, enabled=True)
+        c9 = ConnectionGene(2, 3, enabled=True)
+        c10 = ConnectionGene(2, 3, enabled=True)
+        c11 = ConnectionGene(2, 3, enabled=True)
+        c12 = ConnectionGene(2, 3, enabled=True)
+        c13 = ConnectionGene(2, 3, enabled=True)
+        c14 = ConnectionGene(2, 3, enabled=True)
+        c15 = ConnectionGene(2, 3, enabled=True)
+        c16 = ConnectionGene(2, 3, enabled=True)
+        c17 = ConnectionGene(2, 3, enabled=True)
+        c18 = ConnectionGene(2, 3, enabled=True)
+        c19 = ConnectionGene(2, 3, enabled=True)
+        c20 = ConnectionGene(2, 3, enabled=True)
+        c21 = ConnectionGene(2, 3, enabled=True)
+        c22 = ConnectionGene(2, 3, enabled=True)
+        c23 = ConnectionGene(2, 3, enabled=True)
+        c24 = ConnectionGene(2, 3, enabled=True)
+        c25 = ConnectionGene(2, 3, enabled=True)
+        c26 = ConnectionGene(2, 3, enabled=True)
+        c27 = ConnectionGene(2, 3, enabled=True)
+        c28 = ConnectionGene(2, 3, enabled=True)
+        c29 = ConnectionGene(2, 3, enabled=True)
+        c30 = ConnectionGene(2, 3, enabled=True)
+        c31 = ConnectionGene(2, 3, enabled=True)
+        c31 = ConnectionGene(2, 3, enabled=True)
+        c33 = ConnectionGene(2, 3, enabled=True)
 
         for i in range(100):
-            specie.add_genome(Genome([[1, 3, random.random(), True, 0], [2, 3, random.random(), True, 1]], 2, 1))
+            specie.add_genome(Genome([[1, 9, random.random(), True, 0], [1, 10, random.random(), True, 1], [1, 11, random.random(), True, 2], [1, 12, random.random(), True, 3],
+                                      [2, 9, random.random(), True, 4], [2, 10, random.random(), True, 5], [2, 11, random.random(), True, 6], [2, 12, random.random(), True, 7],
+                                      [3, 9, random.random(), True, 8], [3, 10, random.random(), True, 9], [3, 11, random.random(), True, 10], [3, 12, random.random(), True, 11],
+                                      [4, 9, random.random(), True, 12], [4, 10, random.random(), True, 13], [4, 11, random.random(), True, 14], [4, 12, random.random(), True, 15],
+                                      [5, 9, random.random(), True, 16], [5, 10, random.random(), True, 17], [5, 11, random.random(), True, 18], [5, 12, random.random(), True, 19],
+                                      [6, 9, random.random(), True, 20], [6, 10, random.random(), True, 21], [6, 11, random.random(), True, 22], [6, 12, random.random(), True, 23],
+                                      [7, 9, random.random(), True, 24], [7, 10, random.random(), True, 25], [7, 11, random.random(), True, 26], [7, 12, random.random(), True, 27],
+                                      [8, 9, random.random(), True, 28], [8, 10, random.random(), True, 29], [8, 11, random.random(), True, 30], [8, 12, random.random(), True, 31]], 8, 4))
 
-        generation.species[0] = specie
+        generation.groups[0] = specie
 
         generation.create_new_generation()
 
         i = 1
-        while i < 100:
-            generation.create_new_generation()
-            i += 1
-        print(generation.fitness)
+        while i < 50:
+            print(i)
+            generation = generation.create_new_generation()
+
 
 
 if __name__ == '__main__':
