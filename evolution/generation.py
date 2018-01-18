@@ -26,6 +26,7 @@ class Evaluate(Thread):
         self._fitness = 0
 
     def calculateFitness(self):
+        self._fitness = 1
         pass
 
     def run(self):
@@ -53,28 +54,42 @@ class Evaluate(Thread):
         # Wait for a connection
         print('waiting for a connection')
         connection, client_address = sock.accept()
+        while True:
+            try:
+                print('connection from', client_address)
 
-        try:
-            print('connection from', client_address)
+                total_data = []
+                while True:
+                    # receive data
+                    data = connection.recv(16)
+                    total_data.append(data)
+                    if not data:
+                        break
 
-            total_data = []
-            while True:
-                # receive data
-                data = connection.recv(16)
-                total_data.append(data)
-                if not data:
-                    break
-
-            # convert data to list of inputs
-            print('received "{}"'.format(pickle.loads(b''.join(total_data))))
-        finally:
-            # Clean up the connection
-            print('closing')
-            connection.close()
-            sock.close()
-            os.unlink(address)
-
-        self._fitness = 1
+                # convert data from binary
+                score, board = pickle.loads(b''.join(total_data))
+                self.calculateFitness(score, board)
+                input = [x for row in board for x in row]
+                output = self._neural_network.forward(input)
+                # choose move to make
+                move = max(output)
+                moves = {
+                    0: 'LEFT',
+                    1: 'RIGHT',
+                    2: 'UP',
+                    3: 'DOWN',
+                    4: 'RETURN'
+                }
+                # send move to game
+                sock.sendall(pickle.dumps(moves[output.index(move)]))
+                print('received "{}"'.format((score, board)))
+            except:
+                # Clean up the connection
+                break
+                print('closing')
+        connection.close()
+        sock.close()
+        os.unlink(address)
 
     def join(self):
         Thread.join(self)
