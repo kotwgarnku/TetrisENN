@@ -1,6 +1,7 @@
 import evolution.util
 import random
 import copy
+import json
 
 
 class Genome:
@@ -328,12 +329,37 @@ class Genome:
 
         return Genome(list(child_connections_with_innovs.values()), input_size, output_size)
 
+    def to_json(self):
+        """
+        Produces JSON content from this genome.
+        :return: string in JSON format
+        """
+        genome_dict = dict(input_size=self.input_size,
+                           output_size=self.output_size,
+                           connections=self.get_connections())
+        return json.dumps(genome_dict)
+
+    @staticmethod
+    def from_json(json_content):
+        """
+        Constructs new Genome from JSON formatted string.
+        :param json_content: string formatted as JSON
+        :return: Genome object constructed from JSON
+        """
+        genome_dict = json.loads(json_content)
+        return Genome(genome_dict["connections"], genome_dict["input_size"], genome_dict["output_size"])
+
+
 class NodeGene:
     """This class may actually be kinda redundant but OOP is OOP"""
 
     def __init__(self, node_id=-1, node_type='hidden'):
         self.node_id = node_id
         self.node_type = node_type
+
+    def _json(self):
+        return json.dumps(self.__dict__)
+
 
 class ConnectionGene:
     _innovation_number = 0
