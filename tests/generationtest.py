@@ -309,7 +309,10 @@ class TestGenerationCase(unittest.TestCase):
         print(4.0 - (a[0]-0)**2 - (b[0]-1)**2 - (c[0]-1)**2 - (d[0]-0)**2)
         print(best_nn._genome.fitness)
 
-        plt.plot(list(Generation.best_fitnesses.keys()), list(Generation.best_fitnesses.values()))
+        plot = plt.plot(list(Generation.best_fitnesses.keys()), list(Generation.best_fitnesses.values()))
+        plt.xlabel("Generation")
+        plt.ylabel("Fitness score")
+        plt.title("Fitness score progression")
         plt.savefig("plot of fitness")
 
 
