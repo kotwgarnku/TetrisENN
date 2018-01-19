@@ -305,11 +305,32 @@ class TestGenerationCase(unittest.TestCase):
         print(d)
 
 
-        print("HEHEHEHEHE")
         print(4.0 - (a[0]-0)**2 - (b[0]-1)**2 - (c[0]-1)**2 - (d[0]-0)**2)
         print(best_nn._genome.fitness)
 
-        plot = plt.plot(list(Generation.best_fitnesses.keys()), list(Generation.best_fitnesses.values()))
+        groups_count = []
+        for generation_log in gen.logger.log.values():
+            groups_count.append(len(generation_log.groups_log))
+
+        plt.plot(list(gen.logger.log.keys()), groups_count)
+        plt.xlabel("Generation")
+        plt.ylabel("Number of groups")
+        plt.title("Groups amount change over evolution")
+        plt.savefig("plot of gen count")
+        plt.clf()
+
+        last_gen_groups_fitness = []
+        for fit in gen.logger.log[gen.id-1].groups_fitness_scores_log.values():
+            last_gen_groups_fitness.append(fit[0][2])
+        plt.plot(list(gen.logger.log[gen.id-1].groups_log.keys()), last_gen_groups_fitness, 'ro')
+        plt.xlabel("Group")
+        plt.ylabel("Group adjusted fitness")
+        plt.title("Adjusted fitness of groups in last generation")
+        plt.savefig("plot of last gen fitness")
+        plt.clf()
+
+
+        plt.plot(list(Generation.best_fitnesses.keys()), list(Generation.best_fitnesses.values()))
         plt.xlabel("Generation")
         plt.ylabel("Fitness score")
         plt.title("Fitness score progression")
