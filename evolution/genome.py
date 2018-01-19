@@ -1,12 +1,14 @@
 import evolution.util
 import random
 import copy
+import json
 
 
 class Genome:
     """
     Class representing genome in NEAT.
     """
+
     def __init__(self, connections, input_size, output_size):
         """
         Create genome from given informations.
@@ -178,11 +180,12 @@ class Genome:
         source_node = self.node_genes[source_id]
         destination_id = new_connection[1]
         destination_node = self.node_genes[destination_id]
-        weight = random.normalvariate(mu=0.0, sigma=max_weight/2)
+        weight = random.normalvariate(mu=0.0, sigma=max_weight / 2)
         enable = True
 
         # create new connection
-        self.connection_genes[(source_id, destination_id)] = ConnectionGene(source_node, destination_node, weight, enable)
+        self.connection_genes[(source_id, destination_id)] = ConnectionGene(source_node, destination_node, weight,
+                                                                            enable)
 
     def _mutate_split_connection(self):
         connection = self._get_random_enabled_connection()
@@ -228,7 +231,7 @@ class Genome:
 
         # generate new weight by adding value from N(0, MAX/2) -> chance for value exceeding MAX is ~2%
         # chance for value exceeding MAX twice is 0.003%
-        connection.weight = connection.weight + random.normalvariate(mu=0.0, sigma=max_weight_change/2)
+        connection.weight = connection.weight + random.normalvariate(mu=0.0, sigma=max_weight_change / 2)
 
     def compatibility_distance(self, partner, coefficients):
         """
@@ -328,12 +331,34 @@ class Genome:
 
         return Genome(list(child_connections_with_innovs.values()), input_size, output_size)
 
+    def to_json(self):
+        """
+        Produces JSON content from this genome.
+        :return: string in JSON format
+        """
+        genome_dict = dict(input_size=self.input_size,
+                           output_size=self.output_size,
+                           connections=self.get_connections())
+        return json.dumps(genome_dict)
+
+    @staticmethod
+    def from_json(json_content):
+        """
+        Constructs new Genome from JSON formatted string.
+        :param json_content: string formatted as JSON
+        :return: Genome object constructed from JSON
+        """
+        genome_dict = json.loads(json_content)
+        return Genome(genome_dict["connections"], genome_dict["input_size"], genome_dict["output_size"])
+
+
 class NodeGene:
     """This class may actually be kinda redundant but OOP is OOP"""
 
     def __init__(self, node_id=-1, node_type='hidden'):
         self.node_id = node_id
         self.node_type = node_type
+
 
 class ConnectionGene:
     _innovation_number = 0
