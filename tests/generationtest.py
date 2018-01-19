@@ -4,6 +4,7 @@ from evolution.generation import Generation, Group
 from evolution.genome import *
 from evolution.logger import Logger
 import math
+import matplotlib.pyplot as plt
 
 from nn.neuralnetwork import NeuralNetwork
 
@@ -256,10 +257,21 @@ class TestGenerationCase(unittest.TestCase):
         Group._GROUP_ID = 0
         Generation._GENERATION_ID = 0
         specie = Group()
-        c1 = ConnectionGene(1, 3, enabled=True)
-        c2 = ConnectionGene(2, 3, enabled=True)
+        for i in range(16):
+            for j in range(17, 21):
+                ConnectionGene(i + 1, j,enabled=True)
+
+        connection_list = []
+        z = 0
+        for i in range(16):
+            for j in range(17, 21):
+                connection_list.append([i + 1, j, random.normalvariate(mu=0.0, sigma=1.0), True, z])
+                z += 1
+        print(connection_list)
         for i in range(10):
-            specie.add_genome(Genome([[1, 3, random.normalvariate(mu=0.0, sigma=1.0), True], [2, 3, random.normalvariate(mu=0.0, sigma=1.0), True]], 2, 1))
+            specie.add_genome(Genome([[1, 3, random.normalvariate(mu=0.0, sigma=1.0), True, 0],
+                                     [2, 3, random.normalvariate(mu=0.0, sigma=1.0), True, 1]], 2, 1))
+
 
         mutation_coefficients = {
             'add_connection': 0.5,
@@ -278,7 +290,7 @@ class TestGenerationCase(unittest.TestCase):
                          compatibility_coefficients=compatibility_coefficients, logger=log)
 
         i = 1
-        while i < 2:
+        while i < 150:
             print(i)
             gen = gen.create_new_generation()
             i += 1
@@ -297,7 +309,12 @@ class TestGenerationCase(unittest.TestCase):
         print(4.0 - (a[0]-0)**2 - (b[0]-1)**2 - (c[0]-1)**2 - (d[0]-0)**2)
         print(best_nn._genome.fitness)
 
-    @unittest.skip("skipping")
+        plt.plot(list(Generation.best_fitnesses.keys()), list(Generation.best_fitnesses.values()))
+        plt.savefig("plot of fitness")
+
+
+
+    @unittest.skip
     def test_evolve_xor(self):
         print("testing advanced xor")
         Group._GROUP_ID = 0
@@ -361,16 +378,18 @@ class TestGenerationCase(unittest.TestCase):
             'disjoint_factor': 1.0,
             'weight_difference_factor': 0.5
         }
+        log = Logger()
         gen = Generation([specie], mutation_coefficients=mutation_coefficients,
-                         compatibility_coefficients=compatibility_coefficients)
+                         compatibility_coefficients=compatibility_coefficients, logger=log)
 
-        gen.create_new_generation()
         i = 1
-        while i < 2:
+        while i < 8:
+            print(i)
             gen = gen.create_new_generation()
             i += 1
-        best_nn = Generation.best_phenotype
+        best_nn = NeuralNetwork(Generation.best_genome)
         print(best_nn.forward([0, 1, 1, 0, 0, 1, 1, 0]))
+        print(str(best_nn._genome.fitness) + "/" + str(256*4))
 
 
 

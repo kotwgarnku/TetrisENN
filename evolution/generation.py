@@ -1,99 +1,9 @@
-from random import shuffle
-from functools import reduce
-from threading import Thread
 import random
 from nn.neuralnetwork import NeuralNetwork
 from evolution.genome import Genome
 import math
 import numpy as np
-import os
-import sys
-import socket
-import subprocess
-import pickle
 
-class Evaluate(Thread):
-    SOCKET_ID = 0
-
-    @staticmethod
-    def get_socket_id():
-        Evaluate.SOCKET_ID += 1
-        return Evaluate.SOCKET_ID - 1
-
-    def __init__(self, nn):
-        Thread.__init__(self)
-        self._neural_network = nn
-        self._fitness = 0
-
-    def calculateFitness(self):
-        self._fitness = 1
-        pass
-
-    def run(self):
-        address = '/tmp/{}'.format(Evaluate.get_socket_id())
-
-        # Create a UDS socket
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-
-        # Make sure the socket does not already exist
-        try:
-            os.unlink(address)
-        except OSError:
-            if os.path.exists(address):
-                raise
-
-        # Bind the socket to the port
-        print('starting up on {}'.format(address))
-        sock.bind(address)
-        # Listen for incoming connections
-        sock.listen(1)
-
-        # run tetris game and give it socket address
-        subprocess.Popen(['python3', '../gist.py', address])
-
-        # Wait for a connection
-        print('waiting for a connection')
-        connection, client_address = sock.accept()
-        while True:
-            try:
-                print('connection from', client_address)
-
-                total_data = []
-                while True:
-                    # receive data
-                    data = connection.recv(16)
-                    total_data.append(data)
-                    if not data:
-                        break
-
-                # convert data from binary
-                score, board = pickle.loads(b''.join(total_data))
-                self.calculateFitness(score, board)
-                input = [x for row in board for x in row]
-                output = self._neural_network.forward(input)
-                # choose move to make
-                move = max(output)
-                moves = {
-                    0: 'LEFT',
-                    1: 'RIGHT',
-                    2: 'UP',
-                    3: 'DOWN',
-                    4: 'RETURN'
-                }
-                # send move to game
-                sock.sendall(pickle.dumps(moves[output.index(move)]))
-                print('received "{}"'.format((score, board)))
-            except:
-                # Clean up the connection
-                break
-                print('closing')
-        connection.close()
-        sock.close()
-        os.unlink(address)
-
-    def join(self):
-        Thread.join(self)
-        return self._fitness
 
 class PhenotypesHandler:
     def __init__(self, phenotypes):
@@ -111,29 +21,6 @@ class PhenotypesHandler:
         for nn in self._neural_networks:
             nn._genome.fitness = 1
 
-    def run_all_phenotypes3(self):
-        if Generation.best_genome is None:
-            Generation.best_genome = self._neural_networks[0]._genome
-
-        #Implementation below is just for mocking
-        threads = [Evaluate(nn) for nn in self._neural_networks]
-
-        for thread in threads:
-            thread.start()
-
-        phenotypes_fitness = []
-
-        for thread in threads:
-            phenotypes_fitness.append(thread.join())
-
-        print(phenotypes_fitness)
-
-        # each genome gets fitness of it's phenotype
-        for (phenotype, fitness) in zip(self._neural_networks, phenotypes_fitness):
-            phenotype._genome.fitness = fitness
-
-            if fitness > Generation.best_genome.fitness:
-                Generation.best_genome = phenotype._genome
 
     def run_all_phenotypes2(self):
         if Generation.best_genome is None:
@@ -157,6 +44,32 @@ class PhenotypesHandler:
             nn._genome.fitness = (fitness)
             if fitness > Generation.best_genome.fitness:
                 Generation.best_genome = nn._genome
+                Generation.best_fitnesses[Generation._GENERATION_ID - 1] = fitness
+
+
+    def run_all_phenotypes4(self):
+        if Generation.best_genome is None:
+            Generation.best_genome = self._neural_networks[0]._genome
+
+        for nn in self._neural_networks:
+            fitness = 256.0 * 4
+
+            bits = [0.0, 1.0]
+            for i in range(256):
+                Y = []
+                for j in range(8):
+                    Y.append(np.random.choice(bits))
+                out = nn.forward(Y)
+                y_d = np.logical_xor(Y[:4], Y[4:8])
+                fitness -= ((out[0] - y_d[0]) ** 2)
+                fitness -= ((out[1] - y_d[1]) ** 2)
+                fitness -= ((out[2] - y_d[2]) ** 2)
+                fitness -= ((out[3] - y_d[3]) ** 2)
+
+            nn._genome.fitness = (fitness)
+            if fitness > Generation.best_genome.fitness:
+                Generation.best_genome = nn._genome
+                Generation.best_fitnesses[Generation._GENERATION_ID - 1] = fitness
 
 
     def get_phenotypes_fitness_scores(self):
@@ -178,6 +91,7 @@ class PhenotypesHandler:
 class Generation:
     #ID for logging purpose
     best_genome = None
+    best_fitnesses = {}
     _GENERATION_ID = 0
 
     def __init__(self, groups=None, mutation_coefficients=None, compatibility_coefficients=None, compatibility_threshold=6.0, logger=None):
@@ -232,13 +146,13 @@ class Generation:
 
         self.compatibility_threshold = compatibility_threshold
         self.r_factor = 0.2
-        self.population_size = 10
+        self.population_size = 100
 
     def create_new_generation(self):
         self.create_phenotypes()
         if self.logger is not None:
             self.logger.log_phenotypes(self.id, self.phenotypes)
-        self.run_phenotypes3()
+        self.run_phenotypes2()
 
         if self.logger is not None:
             self.logger.log_phenotypes_fitness_scores(self.id)
@@ -285,9 +199,10 @@ class Generation:
         self.handler = PhenotypesHandler(self.phenotypes)
         self.handler.run_all_phenotypes2()
 
-    def run_phenotypes3(self):
+
+    def run_phenotypes4(self):
         self.handler = PhenotypesHandler(self.phenotypes)
-        self.handler.run_all_phenotypes3()
+        self.handler.run_all_phenotypes4()
 
     def get_phenotypes_fitness_scores(self):
         return self.handler.get_phenotypes_fitness_scores()
@@ -383,7 +298,6 @@ class Generation:
     def _handle_left_genomes(self, new_groups, left_genomes):
         genomes_to_remove = []
         # Check if genome fits in one of existing groups
-        left_genomes2 = left_genomes
 
         for genome in left_genomes:
             for group in new_groups:
