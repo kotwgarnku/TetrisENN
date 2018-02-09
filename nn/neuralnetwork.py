@@ -79,6 +79,9 @@ class NeuralNetwork:
         for neuron in self._neurons.values():
             neuron.reset()
 
+    def get_genome(self):
+        return self._genome
+
     def _DFSUtil(self, v, visited):
         visited[v-1] = True
 
@@ -106,6 +109,3 @@ class NeuralNetwork:
         for v, index in zip(visited, range(len(visited))):
             if not v:
                 self._DFSUtil(index + 1, visited)
-
-    def get_genome(self):
-        return self._genome

@@ -1,6 +1,8 @@
 import unittest
 
-from evolution.genome import ConnectionGene, NodeGene, Genome
+from evolution.genome import Genome
+from evolution.connection_gene import ConnectionGene
+from evolution.node_gene import NodeGene
 from evolution.util import sort_connections_by_innovation_number
 
 

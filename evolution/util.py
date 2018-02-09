@@ -57,11 +57,16 @@ def count_avg_weight_difference(connections_a, connections_b):
     :type connections_b: list(ConnectionGene)
     :return: average weight difference
     """
-    weight_differences = [abs(a.weight - b.weight)
-                          for a in connections_a
-                          for b in connections_b
-                          if a.innovation_number == b.innovation_number]
-    if not weight_differences:
-        return 0
+    weight_differences = [
+        abs(a.weight - b.weight)
+        for a in connections_a
+        for b in connections_b
+        if a.innovation_number == b.innovation_number
+    ]
 
-    return sum(weight_differences) / float(len(weight_differences))
+    if not weight_differences:
+        average = 0
+    else:
+        average = sum(weight_differences) / float(len(weight_differences))
+
+    return average

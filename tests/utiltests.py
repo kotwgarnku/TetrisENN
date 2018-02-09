@@ -1,5 +1,5 @@
 from evolution.util import *
-from evolution.genome import ConnectionGene
+from evolution.connection_gene import ConnectionGene
 from copy import copy
 import unittest
 

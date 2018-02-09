@@ -1,11 +1,11 @@
+import math
 import unittest
+
+import matplotlib.pyplot as plt
 
 from evolution.generation import Generation, Group
 from evolution.genome import *
 from evolution.logger import Logger
-import math
-import matplotlib.pyplot as plt
-
 from nn.neuralnetwork import NeuralNetwork
 
 
