@@ -1,5 +1,6 @@
 import unittest
-from nn.neuralnetwork import Neuron, NeuralNetwork
+from nn.neuralnetwork import NeuralNetwork
+from nn.neuron import Neuron
 
 
 class GenomeMock:

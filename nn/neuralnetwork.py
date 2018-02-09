@@ -1,16 +1,15 @@
-import numpy as np
+from nn.neuron import Neuron
 
 
 class NeuralNetwork:
     def __init__(self, genome=None):
-        self._genome = None
-        self._connections = {}
+        self._genome = genome
         self._neurons = {}
-        self._input_size = 0
-        self._output_size = 0
         self._input_neurons = {}
         self._output_neurons = {}
-        self._genome = genome
+        self._connections = {}
+        self._input_size = 0
+        self._output_size = 0
 
         if genome is not None:
             self.generate_network(genome)
@@ -21,12 +20,14 @@ class NeuralNetwork:
         :param genome: (Genome) - genome containing all informations
         :return:
         """
-        self.clean_network()
+        self._clean_network()
+
         self._genome = genome
         self._input_size = genome.input_size
         self._output_size = genome.output_size
         connections = genome.get_connections()
-        for source, destination, weight, enabled in connections:
+
+        for (source, destination, weight, enabled) in connections:
             if source not in self._neurons:
                 self._neurons[source] = Neuron()
             if destination not in self._neurons:
@@ -35,19 +36,12 @@ class NeuralNetwork:
                 self._connections[(source, destination)] = weight
                 self._neurons[destination].incoming_connections.append((source, weight, enabled))
 
-        for index in range(1, self._input_size + 1):
-            self._input_neurons[index] = self._neurons[index]
+        # first self._input_size neurons are input neurons
+        self._input_neurons = {key: value for (key, value) in self._neurons.items() if key <= self._input_size}
+        # after them are output neurons
+        self._output_neurons = {key: value for (key, value) in self._neurons.items() if key > self._input_size}
 
-        for index in range(self._input_size + 1, self._input_size + self._output_size + 1):
-            self._output_neurons[index] = self._neurons[index]
 
-    def clean_network(self):
-        self._connections = {}
-        self._neurons = {}
-        self._input_size = 0
-        self._output_size = 0
-        self._input_neurons = {}
-        self._output_neurons = {}
 
     def forward(self, X):
         """
@@ -73,6 +67,14 @@ class NeuralNetwork:
             y.append(self._output_neurons[index].get_output_signal())
         return y
 
+    def _clean_network(self):
+        self._neurons = {}
+        self._input_neurons = {}
+        self._output_neurons = {}
+        self._connections = {}
+        self._input_size = 0
+        self._output_size = 0
+
     def _clear_neurons(self):
         for neuron in self._neurons.values():
             neuron._input_signals.clear()
@@ -93,7 +95,6 @@ class NeuralNetwork:
                 connection_value = output_signal * weight
                 self._neurons[v].take_input_signal(connection_value)
 
-
     def _DFS(self):
         """
         Depth-first search
@@ -108,23 +109,3 @@ class NeuralNetwork:
 
     def get_genome(self):
         return self._genome
-
-class Neuron:
-    def __init__(self):
-        self._input_signals = []
-        self._output_signal = 0
-        self.incoming_connections = []
-
-    def take_input_signal(self, input_signal):
-        self._input_signals.append(input_signal)
-
-    def fire(self):
-        self._output_signal = self._activation_function(self._input_signals)
-        return self._output_signal
-
-    def get_output_signal(self):
-        return self._output_signal
-
-    @staticmethod
-    def _activation_function(input_signal):
-        return 1.0/(1 + np.exp(-4.9 * sum(input_signal)))
