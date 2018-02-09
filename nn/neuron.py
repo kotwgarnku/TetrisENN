@@ -5,7 +5,7 @@ class Neuron:
     def __init__(self, activation_function=None):
         self._input_signals = []
         self._output_signal = 0
-        self.incoming_connections = []
+        self.input_connections = []
 
         if activation_function is None:
             self._activation_function = Neuron.sigmoid_activation

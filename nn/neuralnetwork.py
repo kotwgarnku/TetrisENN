@@ -20,7 +20,7 @@ class NeuralNetwork:
         :param genome: (Genome) - genome containing all informations
         :return:
         """
-        self._clean_network()
+        self._reset_network()
 
         self._genome = genome
         self._input_size = genome.input_size
@@ -34,14 +34,14 @@ class NeuralNetwork:
                 self._neurons[destination] = Neuron()
             if enabled:
                 self._connections[(source, destination)] = weight
-                self._neurons[destination].incoming_connections.append((source, weight, enabled))
+                self._neurons[destination].input_connections.append((source, weight, enabled))
 
         # first self._input_size neurons are input neurons
-        self._input_neurons = {key: value for (key, value) in self._neurons.items() if key <= self._input_size}
+        for index in range(1, self._input_size + 1):
+            self._input_neurons[index] = self._neurons[index]
         # after them are output neurons
-        self._output_neurons = {key: value for (key, value) in self._neurons.items() if key > self._input_size}
-
-
+        for index in range(self._input_size + 1, self._input_size + self._output_size + 1):
+            self._output_neurons[index] = self._neurons[index]
 
     def forward(self, X):
         """
@@ -67,7 +67,7 @@ class NeuralNetwork:
             y.append(self._output_neurons[index].get_output_signal())
         return y
 
-    def _clean_network(self):
+    def _reset_network(self):
         self._neurons = {}
         self._input_neurons = {}
         self._output_neurons = {}
@@ -83,12 +83,12 @@ class NeuralNetwork:
         visited[v-1] = True
 
         # Go deeper into connected nodes
-        for source, weight, enabled in self._neurons[v].incoming_connections:
+        for source, weight, enabled in self._neurons[v].input_connections:
             if visited[source-1] == False:
                 self._DFSUtil(source, visited)
 
         # After handling all connected nodes calculate signal in this node
-        for source, weight, enabled in self._neurons[v].incoming_connections:
+        for source, weight, enabled in self._neurons[v].input_connections:
             if enabled:
                 source_id = source
                 output_signal = self._neurons[source_id].fire()
@@ -104,7 +104,7 @@ class NeuralNetwork:
 
         # We start depth-first search with node with ID 1
         for v, index in zip(visited, range(len(visited))):
-            if(v == False):
+            if not v:
                 self._DFSUtil(index + 1, visited)
 
     def get_genome(self):

@@ -60,7 +60,7 @@ class NeuronTestCase(unittest.TestCase):
         self.assertEqual(4 in nn._output_neurons, True)
         self.assertEqual(5 in nn._output_neurons, False)
 
-    def test_conections(self):
+    def test_connections(self):
         genome = GenomeMock([(2, 4, 0, True), (1, 3, 0, True), (2, 3, 0, True), (1, 4, 0, True)], 2, 2)
         nn = NeuralNetwork()
         nn.generate_network(genome)
