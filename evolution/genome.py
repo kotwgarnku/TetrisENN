@@ -1,13 +1,15 @@
-import evolution.util
+import json
 import random
-import copy
+
+import evolution.util
+from evolution.connection_gene import ConnectionGene
+from evolution.node_gene import NodeGene
 
 
 class Genome:
     """
     Class representing genome in NEAT.
     """
-    _genome_ID = 0
 
     def __init__(self, connections, input_size, output_size):
         """
@@ -33,6 +35,7 @@ class Genome:
         self.input_node_ids = []
         self.output_node_ids = []
         self.fitness = None
+        self.adjusted_fitness = None
 
         # standard creation of new genome
         if len(connections[0]) == 4:
@@ -87,7 +90,7 @@ class Genome:
         for index in range(1, input_size + 1):
             self.node_genes[index].node_type = 'input'
             self.input_node_ids.append(index)
-        for index in range(len(self.node_genes) - output_size + 1, len(self.node_genes) + 1):
+        for index in range(input_size + 1, input_size + 1 + output_size):
             self.node_genes[index].node_type = 'output'
             self.output_node_ids.append(index)
 
@@ -179,11 +182,12 @@ class Genome:
         source_node = self.node_genes[source_id]
         destination_id = new_connection[1]
         destination_node = self.node_genes[destination_id]
-        weight = random.normalvariate(mu=0.0, sigma=max_weight/2)
+        weight = random.normalvariate(mu=0.0, sigma=max_weight / 2)
         enable = True
 
         # create new connection
-        self.connection_genes[(source_id, destination_id)] = ConnectionGene(source_node, destination_node, weight, enable)
+        self.connection_genes[(source_id, destination_id)] = ConnectionGene(source_node, destination_node, weight,
+                                                                            enable)
 
     def _mutate_split_connection(self):
         connection = self._get_random_enabled_connection()
@@ -229,7 +233,7 @@ class Genome:
 
         # generate new weight by adding value from N(0, MAX/2) -> chance for value exceeding MAX is ~2%
         # chance for value exceeding MAX twice is 0.003%
-        connection.weight = connection.weight + random.normalvariate(mu=0.0, sigma=max_weight_change/2)
+        connection.weight = connection.weight + random.normalvariate(mu=0.0, sigma=max_weight_change / 2)
 
     def compatibility_distance(self, partner, coefficients):
         """
@@ -276,7 +280,7 @@ class Genome:
 
     @staticmethod
     def _reproduce_equal_genomes(parent1, parent2):
-        child_connections_with_innovs = []
+        child_connections_with_innovs = {}
 
         # generate dictionaries as (innovation_number, connection)
         parent1_connections = dict((conn.innovation_number, conn) for (key, conn) in parent1.connection_genes.items())
@@ -297,17 +301,17 @@ class Genome:
 
             (source_id, dest_id, weight, enabled) = connection_gene.get_connection()
             connection_with_innov = (source_id, dest_id, weight, enabled, innov)
-            child_connections_with_innovs.append(connection_with_innov)
+            child_connections_with_innovs[(source_id, dest_id)] = connection_with_innov
 
         # both parents have to have the same input and output sizes
         input_size = parent1.input_size
         output_size = parent1.output_size
 
-        return Genome(child_connections_with_innovs, input_size, output_size)
+        return Genome(list(child_connections_with_innovs.values()), input_size, output_size)
 
     @staticmethod
     def _reproduce_stronger_with_weaker(stronger, weaker):
-        child_connections_with_innovs = []
+        child_connections_with_innovs = {}
 
         # generate dictionaries as (innovation_number, connection)
         stronger_connections = dict((conn.innovation_number, conn) for (key, conn) in stronger.connection_genes.items())
@@ -322,52 +326,29 @@ class Genome:
 
             (source_id, dest_id, weight, enabled) = connection_gene.get_connection()
             connection_with_innov = (source_id, dest_id, weight, enabled, innov)
-            child_connections_with_innovs.append(connection_with_innov)
+            child_connections_with_innovs[(source_id, dest_id)] = connection_with_innov
 
         input_size = stronger.input_size
         output_size = stronger.output_size
 
-        return Genome(child_connections_with_innovs, input_size, output_size)
+        return Genome(list(child_connections_with_innovs.values()), input_size, output_size)
 
-class NodeGene:
-    """This class may actually be kinda redundant but OOP is OOP"""
-
-    def __init__(self, node_id=-1, node_type='hidden'):
-        self.node_id = node_id
-        self.node_type = node_type
-
-
-class ConnectionGene:
-    _innovation_number = 0
-
-    def __init__(self, source_node=None, destination_node=None, weight=1.0, enabled=False, innovation_number=None):
+    def to_json(self):
         """
-        :type source_node: NodeGene
-        :type destination_node: NodeGene
-        :type weight: float
-        :type enabled: bool
-        :type innovation_number: int
+        Produces JSON content from this genome.
+        :return: string in JSON format
         """
-        self.source_node = source_node
-        self.destination_node = destination_node
-        self._check_connection_vialability()
-        self.weight = weight
-        self.enabled = enabled
-        if innovation_number is None:
-            self.innovation_number = self._get_new_innovation_number()
-        else:
-            self.innovation_number = innovation_number
-
-    def _check_connection_vialability(self):
-        if self.source_node is None and self.destination_node is None:
-            raise Exception("Both nodes are empty")
-        if self.source_node is None or self.destination_node is None:
-            raise Exception("One node is empty")
-
-    def get_connection(self):
-        return self.source_node.node_id, self.destination_node.node_id, self.weight, self.enabled
+        genome_dict = dict(input_size=self.input_size,
+                           output_size=self.output_size,
+                           connections=self.get_connections())
+        return json.dumps(genome_dict)
 
     @staticmethod
-    def _get_new_innovation_number():
-        ConnectionGene._innovation_number += 1
-        return ConnectionGene._innovation_number - 1
+    def from_json(json_content):
+        """
+        Constructs new Genome from JSON formatted string.
+        :param json_content: string formatted as JSON
+        :return: Genome object constructed from JSON
+        """
+        genome_dict = json.loads(json_content)
+        return Genome(genome_dict["connections"], genome_dict["input_size"], genome_dict["output_size"])

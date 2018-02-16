@@ -1,6 +1,8 @@
 import unittest
 
-from evolution.genome import ConnectionGene, NodeGene, Genome
+from evolution.genome import Genome
+from evolution.connection_gene import ConnectionGene
+from evolution.node_gene import NodeGene
 from evolution.util import sort_connections_by_innovation_number
 
 
@@ -55,9 +57,9 @@ class TestGenomeCase(unittest.TestCase):
         self.assertEqual(nodes[0].node_id, 1)
         self.assertEqual(nodes[1].node_type, 'input')
         self.assertEqual(nodes[1].node_id, 2)
-        self.assertEqual(nodes[2].node_type, 'hidden')
+        self.assertEqual(nodes[2].node_type, 'output')
         self.assertEqual(nodes[2].node_id, 3)
-        self.assertEqual(nodes[3].node_type, 'output')
+        self.assertEqual(nodes[3].node_type, 'hidden')
         self.assertEqual(nodes[3].node_id, 4)
 
     def test_connections_sorting_by_innovation_number(self):
@@ -215,6 +217,16 @@ class TestGenomeCase(unittest.TestCase):
         coefficients = dict(excess_factor=1.0, disjoint_factor=1.0, weight_difference_factor=1.0)
         genome.compatibility_distance(genome2, coefficients)
 
+    def test_json_generation(self):
+        genome = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 2)
+
+        genome_from_json = Genome.from_json(genome.to_json())
+
+        self.assertEqual(genome.get_connections(), genome_from_json.get_connections())
+        self.assertEqual(genome.input_size, genome_from_json.input_size)
+        self.assertEqual(genome.output_size, genome_from_json.output_size)
+        self.assertEqual(genome.input_node_ids, genome_from_json.input_node_ids)
+        self.assertEqual(genome.output_node_ids, genome_from_json.output_node_ids)
 
 if __name__ == '__main__':
     firstSuite = unittest.TestLoader().loadTestsFromTestCase(TestGenomeCase)
