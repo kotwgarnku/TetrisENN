@@ -11,8 +11,6 @@ class PhenotypesHandler:
         self._neural_networks = phenotypes
         self._signal_provider = None
 
-        self._connect_to_signals_provider()
-
     def run_all_phenotypes(self):
         #Implementation below is just for mocking
         for nn in self._neural_networks:
@@ -22,70 +20,11 @@ class PhenotypesHandler:
             nn._genome.fitness = 1
 
 
-    def run_all_phenotypes2(self):
-        if Generation.best_genome is None:
-            Generation.best_genome = self._neural_networks[0]._genome
-
-        for nn in self._neural_networks:
-            fitness = 4.0
-
-            Y1 = nn.forward([0.0, 0.0])
-            fitness -= ((Y1[0] - 0) ** 2)
-
-            Y2 = nn.forward([0.0, 1.0])
-            fitness -= ((Y2[0] - 1) ** 2)
-
-            Y3 = nn.forward([1.0, 0.0])
-            fitness -= ((Y3[0] - 1) ** 2)
-
-            Y4 = nn.forward([1.0, 1.0])
-            fitness -= ((Y4[0] - 0) ** 2)
-
-            nn._genome.fitness = (fitness)
-            if fitness > Generation.best_genome.fitness:
-                Generation.best_genome = nn._genome
-                Generation.best_fitnesses[Generation._GENERATION_ID - 1] = fitness
-
-
-    def run_all_phenotypes4(self):
-        if Generation.best_genome is None:
-            Generation.best_genome = self._neural_networks[0]._genome
-
-        for nn in self._neural_networks:
-            fitness = 256.0 * 4
-
-            bits = [0.0, 1.0]
-            for i in range(256):
-                Y = []
-                for j in range(8):
-                    Y.append(np.random.choice(bits))
-                out = nn.forward(Y)
-                y_d = np.logical_xor(Y[:4], Y[4:8])
-                fitness -= ((out[0] - y_d[0]) ** 2)
-                fitness -= ((out[1] - y_d[1]) ** 2)
-                fitness -= ((out[2] - y_d[2]) ** 2)
-                fitness -= ((out[3] - y_d[3]) ** 2)
-
-            nn._genome.fitness = (fitness)
-            if fitness > Generation.best_genome.fitness:
-                Generation.best_genome = nn._genome
-                Generation.best_fitnesses[Generation._GENERATION_ID - 1] = fitness
-
-
     def get_phenotypes_fitness_scores(self):
         phenotypes_fitnesses = []
         for nn in self._neural_networks:
             phenotypes_fitnesses.append(nn._genome.fitness)
         return phenotypes_fitnesses
-
-    def _connect_to_signals_provider(self):
-        """
-        This method connects PhenotypesHandler to some object that will provide it with inputs and that will handle
-        neural networks outputs
-        :return:
-        """
-        #self._signal_provider = Game()
-        pass
 
 
 class Generation:
@@ -94,11 +33,12 @@ class Generation:
     best_fitnesses = {}
     _GENERATION_ID = 0
 
-    def __init__(self, groups=None, mutation_coefficients=None, compatibility_coefficients=None, compatibility_threshold=6.0, logger=None):
+    def __init__(self, groups=None, mutation_coefficients=None, compatibility_coefficients=None, compatibility_threshold=6.0, phenotype_handler_factory = None, logger=None):
 
         self.groups = {}
         self.phenotypes = []
         self.logger = None
+        self.handler_factory = phenotype_handler_factory
         self.handler = None
 
         self.mutation_coefficients = None
@@ -146,13 +86,13 @@ class Generation:
 
         self.compatibility_threshold = compatibility_threshold
         self.r_factor = 0.2
-        self.population_size = 100
+        self.population_size = 40
 
     def create_new_generation(self):
         self.create_phenotypes()
         if self.logger is not None:
             self.logger.log_phenotypes(self.id, self.phenotypes)
-        self.run_phenotypes2()
+        self.run_phenotypes()
 
         if self.logger is not None:
             self.logger.log_phenotypes_fitness_scores(self.id)
@@ -184,7 +124,7 @@ class Generation:
         self._handle_left_genomes(new_groups, left_genomes)
         # And return new generation
         return Generation(new_groups, self.mutation_coefficients, self.compatibility_coefficients,
-                          self.compatibility_threshold, self.logger)
+                          self.compatibility_threshold, self.handler_factory, self.logger)
 
     def create_phenotypes(self):
         for group in self.groups.values():
@@ -192,17 +132,14 @@ class Generation:
                 self.phenotypes.append(NeuralNetwork(genome))
 
     def run_phenotypes(self):
-        self.handler = PhenotypesHandler(self.phenotypes)
+        if self.handler_factory is None:
+            self.handler = PhenotypesHandler(self.phenotypes)
+        else:
+            self.handler = self.handler_factory.get_phenotype_handler(self.phenotypes)
+            print(type(self.handler).__name__)
+
+
         self.handler.run_all_phenotypes()
-
-    def run_phenotypes2(self):
-        self.handler = PhenotypesHandler(self.phenotypes)
-        self.handler.run_all_phenotypes2()
-
-
-    def run_phenotypes4(self):
-        self.handler = PhenotypesHandler(self.phenotypes)
-        self.handler.run_all_phenotypes4()
 
     def get_phenotypes_fitness_scores(self):
         return self.handler.get_phenotypes_fitness_scores()
