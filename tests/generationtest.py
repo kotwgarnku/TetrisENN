@@ -252,6 +252,7 @@ class TestGenerationCase(unittest.TestCase):
     #     print(generation.species[0].genomes)
     #     print(specie.genomes)
     #     #self.assertEqual(generation.species)
+    @unittest.skip
     def test_simple_xor(self):
         print("testing simple xor")
         Group._GROUP_ID = 0

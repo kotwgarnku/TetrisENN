@@ -41,13 +41,14 @@
 
 from random import randrange as rand
 import pygame, sys
-import socket, pickle
-
+import multiprocessing
+import dill
 # The configuration
 cell_size =	18
 cols =		10
 rows =		22
 maxfps = 	30
+DROP_TIME = 20
 
 colors = [
 (0,   0,   0  ),
@@ -118,10 +119,13 @@ def new_board():
 	return board
 
 class TetrisApp(object):
-	def __init__(self, address):
-		self.address = address
+	def __init__(self, connection = None):
 		pygame.init()
 		pygame.key.set_repeat(250,25)
+
+		# IPC stuff
+		self.connection = connection
+
 		self.width = cell_size*(cols+6)
 		self.height = cell_size*rows
 		self.rlim = cell_size*cols
@@ -137,17 +141,6 @@ class TetrisApp(object):
 													 # block them.
 		self.next_stone = tetris_shapes[rand(len(tetris_shapes))]
 		self.init_game()
-
-		# Create a UDS socket
-		self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-
-		# Connect the socket to the port where the server is listening
-		print('connecting to {}'.format(self.address))
-		try:
-			self.sock.connect(self.address)
-		except socket.error:
-			print("ERROR")
-			sys.exit(1)
 	
 	def new_stone(self):
 		self.stone = self.next_stone[:]
@@ -166,7 +159,7 @@ class TetrisApp(object):
 		self.level = 1
 		self.score = 0
 		self.lines = 0
-		pygame.time.set_timer(pygame.USEREVENT+1, 1000)
+		pygame.time.set_timer(pygame.USEREVENT+1, DROP_TIME)
 	
 	def disp_msg(self, msg, topleft):
 		x,y = topleft
@@ -233,8 +226,12 @@ class TetrisApp(object):
 	def quit(self):
 		self.center_msg("Exiting...")
 		pygame.display.update()
-		sys.exit()
-	
+
+		# Send signal that the game is quitting and close connection
+		if self.connection is not None:
+			self.connection.send(('quit', []))
+		return
+
 	def drop(self, manual):
 		if not self.gameover and not self.paused:
 			self.score += 1 if manual else 0
@@ -301,11 +298,10 @@ class TetrisApp(object):
 		while 1:
 			self.screen.fill((0,0,0))
 			if self.gameover:
-				print("closing socket")
-				self.sock.close()
+				#print("closing socket")
+				#self.sock.close()
 				self.quit()
-				self.center_msg("""Game Over!\nYour score: %d
-Press space to continue""" % self.score)
+				return
 			else:
 				if self.paused:
 					self.center_msg("Paused")
@@ -327,44 +323,38 @@ Press space to continue""" % self.score)
 					self.draw_matrix(self.next_stone,
 						(cols+1,2))
 			pygame.display.update()
-			
-			# for event in pygame.event.get():
-			# 	if event.type == pygame.USEREVENT+1:
-			# 		self.drop(False)
-			# 	elif event.type == pygame.QUIT:
-			# 		self.quit()
-			# 	elif event.type == pygame.KEYDOWN:
-			# 		for key in key_actions:
-			# 			if event.key == eval("pygame.K_"
-			# 			+key):
-			# 				key_actions[key]()
-			try:
-				# Send data
+
+			# Send response through pipe and make response based on what the game receives
+			if self.connection is not None:
 				message = (self.score, self.board)
-				print('sending "{}"'.format(message))
-				self.sock.sendall(pickle.dumps(message))
-				# receive move
-				total_data = []
-				while True:
-					# receive data
-					data = self.sock.recv(16)
-					total_data.append(data)
-					if not data:
-						break
-				move = pickle.loads(b''.join(total_data))
-				key_actions[move]()
-				# amount_received = 0
-				# amount_expected = len(message)
-				
-				# while amount_received < amount_expected:
-				# 	data = sock.recv(16)
-				# 	amount_received += len(data)
-				# 	print >>sys.stderr, 'received "{}"'.format(data)
-			except socket.error:
-				print(socket.error.msg)
+				self.connection.send(message)
+
+				response = self.connection.recv()
+
+				if(response == "q"):
+					self.quit()
+					return
+				elif(response == "a"):
+					key_actions['LEFT']()
+				elif(response == "s"):
+					key_actions['DOWN']()
+				elif(response == 'd'):
+					key_actions['RIGHT']()
+				elif(response == 'w'):
+					key_actions['UP']()
+			# Handle input from keyboard
+			for event in pygame.event.get():
+				if event.type == pygame.USEREVENT+1:
+					self.drop(False)
+				elif event.type == pygame.QUIT:
+					self.quit()
+				elif event.type == pygame.KEYDOWN:
+					for key in key_actions:
+						if event.key == eval("pygame.K_"
+						+key):
+							key_actions[key]()
 			dont_burn_my_cpu.tick(maxfps)
 
 if __name__ == '__main__':
-	server_address = sys.argv[1]
-	App = TetrisApp(server_address)
+	App = TetrisApp()
 	App.run()
