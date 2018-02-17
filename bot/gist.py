@@ -229,7 +229,7 @@ class TetrisApp(object):
 
 		# Send signal that the game is quitting and close connection
 		if self.connection is not None:
-			self.connection.send(('quit', []))
+			self.connection.send(('quit', [], [], []))
 		return
 
 	def drop(self, manual):
@@ -326,7 +326,7 @@ class TetrisApp(object):
 
 			# Send response through pipe and make response based on what the game receives
 			if self.connection is not None:
-				message = (self.score, self.board)
+				message = (self.score, self.board, self.stone, self.next_stone)
 				self.connection.send(message)
 
 				response = self.connection.recv()

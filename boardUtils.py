@@ -96,3 +96,60 @@ def num_blocks(board):
 			if _is_block(cell):
 				c += 1
 	return c
+
+def get_stone_number(stone):
+	# Long stone horizontal and vertical
+	if stone == [[6, 6, 6, 6]]:
+		return 10
+	elif stone == [[6], [6], [6], [6]]:
+		return 11
+
+	# 'z' stone horizontal and vertical
+	elif stone == [[3, 3, 0], [0, 3, 3]]:
+		return 20
+	elif stone == [[0, 3], [3, 3], [3, 0]]:
+		return 21
+
+	# mirrored 'z' stone horizontal and vertical
+	elif stone == [[0, 2, 2], [2, 2, 0]]:
+		return 30
+	elif stone == [[2, 0], [2, 2], [0, 2]]:
+		return 31
+
+	# L stone horizontal and vertical
+	elif stone == [[0, 0, 5], [5, 5, 5]]:
+		return 40
+	elif stone == [[5, 5], [0, 5], [0, 5]]:
+		return 41
+	elif stone == [[5, 5, 5], [5, 0, 0]]:
+		return 42
+	elif stone == [[5, 0], [5, 0], [5, 5]]:
+		return 43
+
+
+	# mirrored 'L' stone horizontal and clockwise rotations
+	elif stone == [[4, 4], [4, 0], [4, 0]]:
+		return 51
+	elif stone == [[4, 0, 0], [4, 4, 4]]:
+		return 52
+	elif stone == [[0, 4], [0, 4], [4, 4]]:
+		return 53
+	elif stone == [[4, 4, 4], [0, 0, 4]]:
+		return 54
+
+	# square block:
+	elif stone == [[7, 7], [7, 7]]:
+		return 60
+
+	# T block
+	elif stone == [[1, 1, 1], [0, 1, 0]]:
+		return 70
+	elif stone == [[1, 0], [1, 1], [1, 0]]:
+		return 71
+	elif stone == [[0, 1, 0], [1, 1, 1]]:
+		return 72
+	elif stone == [[0, 1], [1, 1], [0, 1]]:
+		return 73
+	else:
+		raise Exception("Unsuported stone: " + str(stone))
+

@@ -52,7 +52,7 @@ class TetrisPhenotypeHandler(PhenotypesHandler):
     def create_nn_subprocess(self, neural_network_connection, fitnesses, ind, nn):
 
         while (True):
-            score, board = neural_network_connection.recv()
+            score, board, current_stone, next_stone = neural_network_connection.recv()
             if (score == 'quit'):
                 break
             else:
@@ -60,6 +60,9 @@ class TetrisPhenotypeHandler(PhenotypesHandler):
                 for row in board:
                     for block in row:
                         nn_input.append(block)
+
+                current_stone = boardUtils.get_stone_number(current_stone)
+                nn_input.append(current_stone)
 
                 if (len(nn_input) != nn._input_size):
                     raise ("Input to the network has wrong size")
@@ -72,6 +75,7 @@ class TetrisPhenotypeHandler(PhenotypesHandler):
                 max_y = max(y)
                 if (y.index(max_y) == 0):
                     neural_network_connection.send('w')
+                    print("KLIKNIETO W")
                 elif (y.index(max_y) == 1):
                     neural_network_connection.send('a')
                 elif (y.index(max_y) == 2):
@@ -83,7 +87,7 @@ class TetrisPhenotypeHandler(PhenotypesHandler):
                 num_holes = boardUtils.num_holes(board)
                 num_blocks_above = boardUtils.num_blocks_above_holes(board)
 
-                fitnesses[ind] = max((1000 + 100 * score - 5 * num_gaps - 10 * num_holes - 4 * num_blocks_above), 1)
+                fitnesses[ind] = max((1000 + 1000 * score - 5 * num_gaps - 10 * num_holes - 4 * num_blocks_above), 1)
                 print("Score:{} ; num_gaps: {} ; num_holes: {} ; num_blocks: {}".format(fitnesses[ind], num_gaps, num_holes, num_blocks_above))
 
         neural_network_connection.close()
