@@ -13,11 +13,7 @@ class PhenotypesHandler:
 
     def run_all_phenotypes(self):
         #Implementation below is just for mocking
-        for nn in self._neural_networks:
-            nn.forward(np.ones(len(nn._input_neurons)))
-
-        for nn in self._neural_networks:
-            nn._genome.fitness = 1
+        raise Exception("Custom run phenotype handler method was not implemented.")
 
 
     def get_phenotypes_fitness_scores(self):
@@ -136,7 +132,6 @@ class Generation:
             self.handler = PhenotypesHandler(self.phenotypes)
         else:
             self.handler = self.handler_factory.get_phenotype_handler(self.phenotypes)
-
 
         self.handler.run_all_phenotypes()
 
