@@ -136,7 +136,6 @@ class Generation:
             self.handler = PhenotypesHandler(self.phenotypes)
         else:
             self.handler = self.handler_factory.get_phenotype_handler(self.phenotypes)
-            print(type(self.handler).__name__)
 
 
         self.handler.run_all_phenotypes()

@@ -3,7 +3,7 @@ from bot.gist import TetrisApp
 from evolution.generation import *
 from evolution.connection_gene import *
 from evolution.logger import *
-from bot.tetrisPhenotypeHandler import TetrisPhenotypeHandlerFactory
+from bot.tetrisPhenotypeHandler import TetrisPhenotypesHandlerFactory
 
 def create_generation():
     Group._GROUP_ID = 0
@@ -37,7 +37,7 @@ def create_generation():
     }
     log = Logger()
     gen = Generation([specie], mutation_coefficients=mutation_coefficients,
-                     compatibility_coefficients=compatibility_coefficients, logger=log, phenotype_handler_factory=TetrisPhenotypeHandlerFactory())
+                     compatibility_coefficients=compatibility_coefficients, logger=log, phenotype_handler_factory=TetrisPhenotypesHandlerFactory())
 
     return gen
 
