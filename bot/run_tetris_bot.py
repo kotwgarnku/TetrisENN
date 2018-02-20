@@ -1,14 +1,12 @@
-import multiprocessing
-from bot.gist import TetrisApp
 from evolution.generation import *
 from evolution.connection_gene import *
 from evolution.logger import *
-from bot.tetrisPhenotypeHandler import TetrisPhenotypesHandlerFactory
+from bot.tetris_phenotype_handler import TetrisPhenotypesHandler
 
 def create_generation():
     Group._GROUP_ID = 0
     Generation._GENERATION_ID = 0
-    specie = Group()
+    species = Group()
     for i in range(231):
         for j in range(232, 236):
             ConnectionGene(i + 1, j, enabled=True)
@@ -21,7 +19,7 @@ def create_generation():
             z += 1
 
     for i in range(20):
-        specie.add_genome(Genome(connection_list, 231, 4))
+        species.add_genome(Genome(connection_list, 231, 4))
 
     mutation_coefficients = {
         'add_connection': 0.5,
@@ -37,7 +35,7 @@ def create_generation():
     }
     log = Logger()
     gen = Generation([specie], mutation_coefficients=mutation_coefficients,
-                     compatibility_coefficients=compatibility_coefficients, logger=log, phenotype_handler_factory=TetrisPhenotypesHandlerFactory())
+                     compatibility_coefficients=compatibility_coefficients, logger=log, phenotype_handler=TetrisPhenotypesHandler)
 
     return gen
 

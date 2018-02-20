@@ -1,26 +1,9 @@
-import random
-from nn.neuralnetwork import NeuralNetwork
-from evolution.genome import Genome
 import math
-import numpy as np
+import random
 
-
-class PhenotypesHandler:
-    def __init__(self, phenotypes):
-        self._input = input
-        self._neural_networks = phenotypes
-        self._signal_provider = None
-
-    def run_all_phenotypes(self):
-        #Implementation below is just for mocking
-        raise Exception("Custom run phenotype handler method was not implemented.")
-
-
-    def get_phenotypes_fitness_scores(self):
-        phenotypes_fitnesses = []
-        for nn in self._neural_networks:
-            phenotypes_fitnesses.append(nn._genome.fitness)
-        return phenotypes_fitnesses
+from evolution.genome import Genome
+from evolution.phenotype_handler import PhenotypesHandler
+from nn.neuralnetwork import NeuralNetwork
 
 
 class Generation:
@@ -29,12 +12,12 @@ class Generation:
     best_fitnesses = {}
     _GENERATION_ID = 0
 
-    def __init__(self, groups=None, mutation_coefficients=None, compatibility_coefficients=None, compatibility_threshold=6.0, phenotype_handler_factory = None, logger=None):
+    def __init__(self, groups=None, mutation_coefficients=None, compatibility_coefficients=None, compatibility_threshold=6.0, phenotype_handler = None, logger=None):
 
         self.groups = {}
         self.phenotypes = []
         self.logger = None
-        self.handler_factory = phenotype_handler_factory
+        self._phenotype_handler = phenotype_handler
         self.handler = None
 
         self.mutation_coefficients = None
@@ -120,7 +103,7 @@ class Generation:
         self._handle_left_genomes(new_groups, left_genomes)
         # And return new generation
         return Generation(new_groups, self.mutation_coefficients, self.compatibility_coefficients,
-                          self.compatibility_threshold, self.handler_factory, self.logger)
+                          self.compatibility_threshold, self._phenotype_handler, self.logger)
 
     def create_phenotypes(self):
         for group in self.groups.values():
@@ -128,10 +111,10 @@ class Generation:
                 self.phenotypes.append(NeuralNetwork(genome))
 
     def run_phenotypes(self):
-        if self.handler_factory is None:
+        if self._phenotype_handler is None:
             self.handler = PhenotypesHandler(self.phenotypes)
         else:
-            self.handler = self.handler_factory.get_phenotype_handler(self.phenotypes)
+            self.handler = self._phenotype_handler(self.phenotypes)
 
         self.handler.run_all_phenotypes()
 
