@@ -95,37 +95,6 @@ class TestGroupCase(unittest.TestCase):
         self.assertEqual(5 in first_phenotype._output_neurons, False)
         self.assertIs(first_phenotype._genome, self.genome1)
 
-    def test_phenotypes_run(self):
-        generation = Generation([self.group])
-        generation.create_phenotypes()
-        generation.run_phenotypes()
-        losses = generation.get_phenotypes_fitness_scores()
-        self.assertEqual(losses[0], 1)
-        self.assertEqual(losses[6], 1)
-
-    def test_genomes_fitness_score_adjusting(self):
-        genome1 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
-        genome2 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
-        genome3 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
-        genome4 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
-        genome5 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
-        genome6 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
-        group1 = Group()
-        group2 = Group()
-        group1.add_genome(genome1)
-        group1.add_genome(genome2)
-        group1.add_genome(genome3)
-        group1.add_genome(genome4)
-        group2.add_genome(genome5)
-        group2.add_genome(genome6)
-        generation = Generation([group1, group2])
-        generation.create_phenotypes()
-        generation.run_phenotypes()
-        generation.update_genomes_fitness_scores(generation.get_phenotypes_fitness_scores())
-        generation.adjust_genomes_fitness_scores()
-        self.assertEqual(genome1.adjusted_fitness, 0.25)
-        self.assertAlmostEqual(genome5.adjusted_fitness, 0.5)
-
 
 class TestGenerationSecondCase(unittest.TestCase):
     @unittest.skip("skipping")
@@ -296,10 +265,11 @@ class TestGenerationCase(unittest.TestCase):
                          phenotype_handler_factory=XorPhenotypesHandlerFactory())
 
         i = 1
-        while i < 250:
+        while i < 50:
             print(i)
             gen = gen.create_new_generation()
             i += 1
+
         best_nn = NeuralNetwork(Generation.best_genome)
         a = (best_nn.forward([0.0, 0.0]))
         b = (best_nn.forward([0.0, 1.0]))
@@ -342,89 +312,6 @@ class TestGenerationCase(unittest.TestCase):
         plt.title("Fitness score progression")
         plt.savefig("plot of fitness")
 
-
-
-    @unittest.skip
-    def test_evolve_xor(self):
-        print("testing advanced xor")
-        Group._GROUP_ID = 0
-        Generation._GENERATION_ID = 0
-
-        specie = Group()
-
-        c1 = ConnectionGene(1, 3, enabled=True)
-        c2 = ConnectionGene(2, 3, enabled=True)
-        c3 = ConnectionGene(2, 3, enabled=True)
-        c4 = ConnectionGene(2, 3, enabled=True)
-        c5 = ConnectionGene(2, 3, enabled=True)
-        c6 = ConnectionGene(2, 3, enabled=True)
-        c7 = ConnectionGene(2, 3, enabled=True)
-        c8 = ConnectionGene(2, 3, enabled=True)
-        c9 = ConnectionGene(2, 3, enabled=True)
-        c10 = ConnectionGene(2, 3, enabled=True)
-        c11 = ConnectionGene(2, 3, enabled=True)
-        c12 = ConnectionGene(2, 3, enabled=True)
-        c13 = ConnectionGene(2, 3, enabled=True)
-        c14 = ConnectionGene(2, 3, enabled=True)
-        c15 = ConnectionGene(2, 3, enabled=True)
-        c16 = ConnectionGene(2, 3, enabled=True)
-        c17 = ConnectionGene(2, 3, enabled=True)
-        c18 = ConnectionGene(2, 3, enabled=True)
-        c19 = ConnectionGene(2, 3, enabled=True)
-        c20 = ConnectionGene(2, 3, enabled=True)
-        c21 = ConnectionGene(2, 3, enabled=True)
-        c22 = ConnectionGene(2, 3, enabled=True)
-        c23 = ConnectionGene(2, 3, enabled=True)
-        c24 = ConnectionGene(2, 3, enabled=True)
-        c25 = ConnectionGene(2, 3, enabled=True)
-        c26 = ConnectionGene(2, 3, enabled=True)
-        c27 = ConnectionGene(2, 3, enabled=True)
-        c28 = ConnectionGene(2, 3, enabled=True)
-        c29 = ConnectionGene(2, 3, enabled=True)
-        c30 = ConnectionGene(2, 3, enabled=True)
-        c31 = ConnectionGene(2, 3, enabled=True)
-        c31 = ConnectionGene(2, 3, enabled=True)
-        c33 = ConnectionGene(2, 3, enabled=True)
-
-        for i in range(10):
-            specie.add_genome(Genome([[1, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [1, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [1, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [1, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
-                                      [2, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [2, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [2, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [2, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
-                                      [3, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [3, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [3, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [3, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
-                                      [4, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [4, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [4, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [4, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
-                                      [5, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [5, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [5, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [5, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
-                                      [6, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [6, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [6, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [6, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
-                                      [7, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [7, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [7, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [7, 12, random.normalvariate(mu=0.0, sigma=1.0), True],
-                                      [8, 9, random.normalvariate(mu=0.0, sigma=1.0), True], [8, 10, random.normalvariate(mu=0.0, sigma=1.0), True], [8, 11, random.normalvariate(mu=0.0, sigma=1.0), True], [8, 12, random.normalvariate(mu=0.0, sigma=1.0), True]], 8, 4))
-
-        mutation_coefficients = {
-                'add_connection': 0.5,
-                'split_connection': 0.2,
-                'change_weight': 0.8,
-                'new_connection_abs_max_weight': 1.0,
-                'max_weight_mutation': 0.25
-            }
-        compatibility_coefficients = {
-            'excess_factor': 1.0,
-            'disjoint_factor': 1.0,
-            'weight_difference_factor': 0.5
-        }
-        log = Logger()
-        gen = Generation([specie], mutation_coefficients=mutation_coefficients,
-                         compatibility_coefficients=compatibility_coefficients, logger=log)
-
-        i = 1
-        while i < 8:
-            print(i)
-            gen = gen.create_new_generation()
-            i += 1
-        best_nn = NeuralNetwork(Generation.best_genome)
-        print(best_nn.forward([0, 1, 1, 0, 0, 1, 1, 0]))
-        print(str(best_nn._genome.fitness) + "/" + str(256*4))
-
-
-
 if __name__ == '__main__':
-    # firstSuite = unittest.TestLoader().loadTestsFromTestCase(TestGroupCase)
     secondSuite = unittest.TestLoader().loadTestsFromTestCase(TestGenerationCase)
-    # unittest.TextTestRunner(verbosity=2).run(firstSuite)
     unittest.TextTestRunner(verbosity=2).run(secondSuite)
