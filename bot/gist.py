@@ -42,7 +42,6 @@
 from random import randrange as rand
 import pygame, sys
 import multiprocessing
-import dill
 # The configuration
 cell_size =	18
 cols =		10

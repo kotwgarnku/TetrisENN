@@ -3,7 +3,7 @@ import unittest
 
 import matplotlib.pyplot as plt
 
-from evolution.generation import Generation, Group
+from evolution.generation import Generation, Group, PhenotypesHandler
 from evolution.genome import *
 from evolution.logger import Logger
 from nn.neuralnetwork import NeuralNetwork
@@ -225,34 +225,6 @@ class TestLoggerCase(unittest.TestCase):
 
 class TestGenerationCase(unittest.TestCase):
 
-    # def test_next_generation_the_same(self):
-    #     mutation_coefficients = {
-    #         'add_connection': 1.0,
-    #         'split_connection': 0.0,
-    #         'change_weight': 0.0,
-    #         'new_connection_abs_max_weight': 5.0,
-    #         'max_weight_mutation': 2.5
-    #     }
-    #     compatibility_coefficients = {
-    #         'excess_factor': 2.0,
-    #         'disjoint_factor': 2.0,
-    #         'weight_difference_factor': 1.0
-    #     }
-    #
-    #     generation = Generation()
-    #
-    #     specie = Specie()
-    #
-    #     for i in range(10):
-    #         specie.add_genome(Genome([[1, 2, 0, True, 0], [1, 3, 0, True, 1]], 1, 1))
-    #
-    #     generation.species[0] = specie
-    #
-    #     generation.create_new_generation(mutation_coefficients, compatibility_coefficients)
-    #     print(generation.species[0].genomes)
-    #     print(specie.genomes)
-    #     #self.assertEqual(generation.species)
-    @unittest.skip
     def test_simple_xor(self):
         print("testing simple xor")
         Group._GROUP_ID = 0
@@ -287,11 +259,44 @@ class TestGenerationCase(unittest.TestCase):
             'weight_difference_factor': 2.0
         }
         log = Logger()
+
+        class XorPhenotypesHandlerFactory:
+            def get_phenotype_handler(self, phenotypes):
+                return XorPhenotypesHandlerFactory.XorPhenotypesHandler(phenotypes)
+
+            class XorPhenotypesHandler(PhenotypesHandler):
+                def run_all_phenotypes(self):
+                    if Generation.best_genome is None:
+                        Generation.best_genome = self._neural_networks[0]._genome
+
+                    for nn in self._neural_networks:
+                        fitness = 4.0
+
+                        Y1 = nn.forward([0.0, 0.0])
+                        fitness -= ((Y1[0] - 0) ** 2)
+
+                        Y2 = nn.forward([0.0, 1.0])
+                        fitness -= ((Y2[0] - 1) ** 2)
+
+                        Y3 = nn.forward([1.0, 0.0])
+                        fitness -= ((Y3[0] - 1) ** 2)
+
+                        Y4 = nn.forward([1.0, 1.0])
+                        fitness -= ((Y4[0] - 0) ** 2)
+
+                        nn._genome.fitness = (fitness)
+                        if fitness > Generation.best_genome.fitness:
+                            Generation.best_genome = nn._genome
+                            Generation.best_fitnesses[Generation._GENERATION_ID - 1] = fitness
+
+
+
         gen = Generation([specie], mutation_coefficients=mutation_coefficients,
-                         compatibility_coefficients=compatibility_coefficients, logger=log)
+                         compatibility_coefficients=compatibility_coefficients, logger=log,
+                         phenotype_handler_factory=XorPhenotypesHandlerFactory())
 
         i = 1
-        while i < 150:
+        while i < 250:
             print(i)
             gen = gen.create_new_generation()
             i += 1
