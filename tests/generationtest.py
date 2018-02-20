@@ -3,7 +3,8 @@ import unittest
 
 import matplotlib.pyplot as plt
 
-from evolution.generation import Generation, Group, PhenotypesHandler
+from evolution.generation import Generation, Group
+from evolution.phenotype_handler import PhenotypesHandler
 from evolution.genome import *
 from evolution.logger import Logger
 from nn.neuralnetwork import NeuralNetwork
@@ -152,10 +153,6 @@ class TestGenerationSecondCase(unittest.TestCase):
         group2.add_genome(genome6)
         group2.add_genome(genome7)
         generation = Generation([group1, group2])
-   #     for i in range(100):
-    #        print(i)
-     #       generation = generation.create_new_generation()
-        print("Done")
 
 class TestLoggerCase(unittest.TestCase):
     def setUp(self):
@@ -229,40 +226,35 @@ class TestGenerationCase(unittest.TestCase):
         }
         log = Logger()
 
-        class XorPhenotypesHandlerFactory:
-            def get_phenotype_handler(self, phenotypes):
-                return XorPhenotypesHandlerFactory.XorPhenotypesHandler(phenotypes)
+        class XorPhenotypesHandler(PhenotypesHandler):
+            def run_all_phenotypes(self):
+                if Generation.best_genome is None:
+                    Generation.best_genome = self._neural_networks[0]._genome
 
-            class XorPhenotypesHandler(PhenotypesHandler):
-                def run_all_phenotypes(self):
-                    if Generation.best_genome is None:
-                        Generation.best_genome = self._neural_networks[0]._genome
+                for nn in self._neural_networks:
+                    fitness = 4.0
 
-                    for nn in self._neural_networks:
-                        fitness = 4.0
+                    Y1 = nn.forward([0.0, 0.0])
+                    fitness -= ((Y1[0] - 0) ** 2)
 
-                        Y1 = nn.forward([0.0, 0.0])
-                        fitness -= ((Y1[0] - 0) ** 2)
+                    Y2 = nn.forward([0.0, 1.0])
+                    fitness -= ((Y2[0] - 1) ** 2)
 
-                        Y2 = nn.forward([0.0, 1.0])
-                        fitness -= ((Y2[0] - 1) ** 2)
+                    Y3 = nn.forward([1.0, 0.0])
+                    fitness -= ((Y3[0] - 1) ** 2)
 
-                        Y3 = nn.forward([1.0, 0.0])
-                        fitness -= ((Y3[0] - 1) ** 2)
+                    Y4 = nn.forward([1.0, 1.0])
+                    fitness -= ((Y4[0] - 0) ** 2)
 
-                        Y4 = nn.forward([1.0, 1.0])
-                        fitness -= ((Y4[0] - 0) ** 2)
-
-                        nn._genome.fitness = (fitness)
-                        if fitness > Generation.best_genome.fitness:
-                            Generation.best_genome = nn._genome
-                            Generation.best_fitnesses[Generation._GENERATION_ID - 1] = fitness
-
+                    nn._genome.fitness = (fitness)
+                    if fitness > Generation.best_genome.fitness:
+                        Generation.best_genome = nn._genome
+                        Generation.best_fitnesses[Generation._GENERATION_ID - 1] = fitness
 
 
         gen = Generation([specie], mutation_coefficients=mutation_coefficients,
                          compatibility_coefficients=compatibility_coefficients, logger=log,
-                         phenotype_handler_factory=XorPhenotypesHandlerFactory())
+                         phenotype_handler=XorPhenotypesHandler)
 
         i = 1
         while i < 50:
