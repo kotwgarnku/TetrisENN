@@ -12,7 +12,8 @@ class Generation:
     best_fitnesses = {}
     _GENERATION_ID = 0
 
-    def __init__(self, groups=None, mutation_coefficients=None, compatibility_coefficients=None, compatibility_threshold=6.0, phenotype_handler = None, logger=None):
+    def __init__(self, groups=None, mutation_coefficients=None, compatibility_coefficients=None,
+                 compatibility_threshold=6.0, population_size=100, phenotype_handler = None, logger=None):
 
         self.groups = {}
         self.phenotypes = []
@@ -27,7 +28,7 @@ class Generation:
         self.id = self.get_unique_generation_id()
 
         self._initialize_groups(groups)
-        self._initialize_coefficients(mutation_coefficients, compatibility_coefficients, compatibility_threshold)
+        self._initialize_coefficients(mutation_coefficients, compatibility_coefficients, compatibility_threshold, population_size)
         self._initialize_logger(logger)
 
     def _initialize_groups(self, groups):
@@ -42,7 +43,7 @@ class Generation:
                                 self.compatibility_threshold, self.r_factor, self.population_size)
             logger.log_groups(self.id, self.groups)
 
-    def _initialize_coefficients(self, mutation_coefficients, compatibility_coefficients, compatibility_threshold):
+    def _initialize_coefficients(self, mutation_coefficients, compatibility_coefficients, compatibility_threshold, population_size=100):
         if mutation_coefficients is None:
             self.mutation_coefficients = {
                 'add_connection': 0.1,
@@ -65,7 +66,7 @@ class Generation:
 
         self.compatibility_threshold = compatibility_threshold
         self.r_factor = 0.2
-        self.population_size = 40
+        self.population_size = population_size
 
     def create_new_generation(self):
         self.create_phenotypes()
@@ -102,8 +103,10 @@ class Generation:
             new_groups.append(Group(group_key, self.get_offsprings_from_group(group_key, group_offspring_amount, left_genomes)))
         self._handle_left_genomes(new_groups, left_genomes)
         # And return new generation
-        return Generation(new_groups, self.mutation_coefficients, self.compatibility_coefficients,
-                          self.compatibility_threshold, self._phenotype_handler, self.logger)
+        return Generation(groups=new_groups, mutation_coefficients=self.mutation_coefficients,
+                          compatibility_coefficients=self.compatibility_coefficients, population_size=self.population_size,
+                          compatibility_threshold=self.compatibility_threshold, phenotype_handler=self._phenotype_handler,
+                          logger=self.logger)
 
     def create_phenotypes(self):
         for group in self.groups.values():
@@ -142,9 +145,6 @@ class Generation:
         for group_id, group_score in group_scores.items():
             offspring_count[group_id] = round((float(group_score)/float(total_generation_score)) * self.population_size)
 
-        #if(sum(offspring_count.values()) != self.population_size):
-         #   raise Exception(("Amount of offsprings does not sum up to population size.[Sum = " + str(sum(offspring_count.values())) +
-          #                  " | Population size: " + str(self.population_size)))
         return offspring_count
 
     def _remove_groups_without_offsprings(self, offspring_count):
@@ -155,6 +155,8 @@ class Generation:
             del offspring_count[group_id]
 
     def _remove_stale_groups(self, offspring_count):
+
+        # set different threshold based on generation
         if(len(self.groups) < 10):
             return
         if self.id < 5:
@@ -167,10 +169,12 @@ class Generation:
             val = 0.002
         if self.id < 200:
             val = 0.001
+        else:
+            val = 0.0005
 
         if self.logger is None:
             return
-        val = 0.005
+
         groups_to_remove = []
         groups_to_check = [self.groups[key] for key in offspring_count.keys()]
         for group in groups_to_check:

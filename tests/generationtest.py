@@ -98,7 +98,6 @@ class TestGroupCase(unittest.TestCase):
 
 
 class TestGenerationSecondCase(unittest.TestCase):
-    @unittest.skip("skipping")
     def test_calculating_offsprings(self):
         Group._GROUP_ID = 0
         Generation._GENERATION_ID = 0
@@ -119,10 +118,19 @@ class TestGenerationSecondCase(unittest.TestCase):
         group2.add_genome(genome6)
         group2.add_genome(genome7)
         generation = Generation([group1, group2])
-        generation.create_phenotypes()
-        generation.run_phenotypes()
-        generation.update_genomes_fitness_scores(generation.get_phenotypes_fitness_scores())
+
+        # Manually change fitness
+        genome1.fitness = 1
+        genome2.fitness = 1
+        genome3.fitness = 1
+        genome4.fitness = 1
+
+        genome5.fitness = 1
+        genome6.fitness = 1
+        genome7.fitness = 1
+
         generation.adjust_genomes_fitness_scores()
+        generation.population_size = 100
         a = generation.calculate_groups_adjusted_fitness_scores()
         offspring_count = generation.calculate_groups_offsprings(a, sum(a.values()))
         self.assertEqual(offspring_count[0], 50)
@@ -154,40 +162,6 @@ class TestGenerationSecondCase(unittest.TestCase):
         group2.add_genome(genome7)
         generation = Generation([group1, group2])
 
-class TestLoggerCase(unittest.TestCase):
-    def setUp(self):
-        Group._GROUP_ID = 0
-        Generation._GENERATION_ID = 0
-        self.genome1 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
-        self.genome2 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
-        self.genome3 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
-        self.genome4 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
-        self.genome5 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
-        self.genome6 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
-        self.genome7 = Genome([[1, 3, 0, True], [1, 4, 0, True], [2, 3, 0, True], [2, 4, 0, True]], 2, 1)
-        self.genome1.fitness = 2
-        self.genome2.fitness = 0
-        self.genome3.fitness = 22
-        self.genome4.fitness = 13
-        self.genome5.fitness = 2
-        self.genome6.fitness = 6
-        self.genome7.fitness = 8
-        self.group = Group()
-        self.group.add_genome(self.genome1)
-        self.group.add_genome(self.genome2)
-        self.group.add_genome(self.genome3)
-        self.group.add_genome(self.genome4)
-        self.group.add_genome(self.genome5)
-        self.group.add_genome(self.genome6)
-        self.group.add_genome(self.genome7)
-        self.logger = Logger()
-        self.generation = Generation([self.group], logger=self.logger)
-
-    def test_logging(self):
-        self.assertIs(self.logger.log[0].groups_log[0], self.group)
-
-
-    #TODO test logging fitness scores and other things
 
 class TestGenerationCase(unittest.TestCase):
 
@@ -195,7 +169,7 @@ class TestGenerationCase(unittest.TestCase):
         print("testing simple xor")
         Group._GROUP_ID = 0
         Generation._GENERATION_ID = 0
-        specie = Group()
+        species = Group()
         for i in range(16):
             for j in range(17, 21):
                 ConnectionGene(i + 1, j,enabled=True)
@@ -206,9 +180,9 @@ class TestGenerationCase(unittest.TestCase):
             for j in range(17, 21):
                 connection_list.append([i + 1, j, random.normalvariate(mu=0.0, sigma=1.0), True, z])
                 z += 1
-        print(connection_list)
+
         for i in range(10):
-            specie.add_genome(Genome([[1, 3, random.normalvariate(mu=0.0, sigma=1.0), True, 0],
+            species.add_genome(Genome([[1, 3, random.normalvariate(mu=0.0, sigma=1.0), True, 0],
                                      [2, 3, random.normalvariate(mu=0.0, sigma=1.0), True, 1]], 2, 1))
 
 
@@ -252,13 +226,13 @@ class TestGenerationCase(unittest.TestCase):
                         Generation.best_fitnesses[Generation._GENERATION_ID - 1] = fitness
 
 
-        gen = Generation([specie], mutation_coefficients=mutation_coefficients,
+        gen = Generation([species], mutation_coefficients=mutation_coefficients,
                          compatibility_coefficients=compatibility_coefficients, logger=log,
-                         phenotype_handler=XorPhenotypesHandler)
+                         phenotype_handler=XorPhenotypesHandler, population_size=100)
 
         i = 1
-        while i < 50:
-            print(i)
+        while i < 150:
+            print("Xor test generation " + str(i))
             gen = gen.create_new_generation()
             i += 1
 
@@ -267,15 +241,12 @@ class TestGenerationCase(unittest.TestCase):
         b = (best_nn.forward([0.0, 1.0]))
         c = (best_nn.forward([1.0, 0.0]))
         d = (best_nn.forward([1.0, 1.0]))
-        print(a)
-        print(b)
-        print(c)
-        print(d)
+
+        self.assertEqual(4.0 - (a[0]-0)**2 - (b[0]-1)**2 - (c[0]-1)**2 - (d[0]-0)**2, best_nn._genome.fitness)
+        self.assertGreater(best_nn._genome.fitness, 3.9)
 
 
-        print(4.0 - (a[0]-0)**2 - (b[0]-1)**2 - (c[0]-1)**2 - (d[0]-0)**2)
-        print(best_nn._genome.fitness)
-
+        # Also make some cool plots
         groups_count = []
         for generation_log in gen.logger.log.values():
             groups_count.append(len(generation_log.groups_log))
@@ -296,7 +267,6 @@ class TestGenerationCase(unittest.TestCase):
         plt.title("Adjusted fitness of groups in last generation")
         plt.savefig("plot of last gen fitness")
         plt.clf()
-
 
         plt.plot(list(Generation.best_fitnesses.keys()), list(Generation.best_fitnesses.values()))
         plt.xlabel("Generation")

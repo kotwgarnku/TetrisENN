@@ -34,7 +34,7 @@ def create_generation():
         'weight_difference_factor': 2.0
     }
     log = Logger()
-    gen = Generation([specie], mutation_coefficients=mutation_coefficients,
+    gen = Generation([species], mutation_coefficients=mutation_coefficients,
                      compatibility_coefficients=compatibility_coefficients, logger=log, phenotype_handler=TetrisPhenotypesHandler)
 
     return gen
