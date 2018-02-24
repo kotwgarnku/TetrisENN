@@ -1,3 +1,7 @@
+import unittest
+from evolution.generation import Group, Generation, Genome
+from evolution.logger import Logger
+
 class TestLoggerCase(unittest.TestCase):
     def setUp(self):
         Group._GROUP_ID = 0
@@ -29,3 +33,8 @@ class TestLoggerCase(unittest.TestCase):
 
     def test_logging(self):
         self.assertIs(self.logger.log[0].groups_log[0], self.group)
+
+
+if __name__ == '__main__':
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestLoggerCase)
+    unittest.TextTestRunner(suite)

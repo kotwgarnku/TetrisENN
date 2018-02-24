@@ -3,10 +3,10 @@ import unittest
 
 import matplotlib.pyplot as plt
 
+from evolution.logger import Logger
 from evolution.generation import Generation, Group
 from evolution.phenotype_handler import PhenotypesHandler
 from evolution.genome import *
-from evolution.logger import Logger
 from nn.neuralnetwork import NeuralNetwork
 
 
@@ -162,29 +162,30 @@ class TestGenerationSecondCase(unittest.TestCase):
         group2.add_genome(genome7)
         generation = Generation([group1, group2])
 
+    def test_creating_starting_generation(self):
+        handler = type("MockPhenotypesHandler", (PhenotypesHandler, object), {"run_all_phenotypes": lambda self: 0})
+        gen = Generation.create_starting_generation(10, 3, 10, phenotype_handler=handler)
+        self.assertEqual(len(gen.groups), 10)
+        self.assertEqual(len(gen.groups[0].genomes), 100)
+        self.assertEqual(len(gen.groups), 10)
+
+        self.assertEqual(gen.compatibility_threshold, 6.0)
+
+        self.assertEqual(gen.compatibility_coefficients['excess_factor'], 1.5)
+        self.assertEqual(gen.compatibility_coefficients['disjoint_factor'], 1.5)
+        self.assertEqual(gen.compatibility_coefficients['weight_difference_factor'], 2.0)
+
+        self.assertEqual(gen.mutation_coefficients['split_connection'], 0.2)
+        self.assertEqual(gen.mutation_coefficients['change_weight'], 0.8)
+        self.assertEqual(gen.mutation_coefficients['new_connection_abs_max_weight'], 2.0)
+        self.assertEqual(gen.mutation_coefficients['max_weight_mutation'], 0.5)
+
+
 
 class TestGenerationCase(unittest.TestCase):
 
     def test_simple_xor(self):
         print("testing simple xor")
-        Group._GROUP_ID = 0
-        Generation._GENERATION_ID = 0
-        species = Group()
-        for i in range(16):
-            for j in range(17, 21):
-                ConnectionGene(i + 1, j,enabled=True)
-
-        connection_list = []
-        z = 0
-        for i in range(16):
-            for j in range(17, 21):
-                connection_list.append([i + 1, j, random.normalvariate(mu=0.0, sigma=1.0), True, z])
-                z += 1
-
-        for i in range(10):
-            species.add_genome(Genome([[1, 3, random.normalvariate(mu=0.0, sigma=1.0), True, 0],
-                                     [2, 3, random.normalvariate(mu=0.0, sigma=1.0), True, 1]], 2, 1))
-
 
         mutation_coefficients = {
             'add_connection': 0.5,
@@ -198,8 +199,6 @@ class TestGenerationCase(unittest.TestCase):
             'disjoint_factor': 1.0,
             'weight_difference_factor': 2.0
         }
-        log = Logger()
-
         class XorPhenotypesHandler(PhenotypesHandler):
             def run_all_phenotypes(self):
                 if Generation.best_genome is None:
@@ -224,11 +223,7 @@ class TestGenerationCase(unittest.TestCase):
                     if fitness > Generation.best_genome.fitness:
                         Generation.best_genome = nn._genome
                         Generation.best_fitnesses[Generation._GENERATION_ID - 1] = fitness
-
-
-        gen = Generation([species], mutation_coefficients=mutation_coefficients,
-                         compatibility_coefficients=compatibility_coefficients, logger=log,
-                         phenotype_handler=XorPhenotypesHandler, population_size=100)
+        gen = Generation.create_starting_generation(2, 1, 10, XorPhenotypesHandler, mutation_coefficients, compatibility_coefficients)
 
         i = 1
         while i < 150:
@@ -275,5 +270,6 @@ class TestGenerationCase(unittest.TestCase):
         plt.savefig("plot of fitness")
 
 if __name__ == '__main__':
-    secondSuite = unittest.TestLoader().loadTestsFromTestCase(TestGenerationCase)
-    unittest.TextTestRunner(verbosity=2).run(secondSuite)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestGenerationCase)
+    #second_suite = unittest.TestLoader().loadTestsFromTestCase(TestGroupCase)
+    unittest.TextTestRunner(verbosity=2).run(suite)
