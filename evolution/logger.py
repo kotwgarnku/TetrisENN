@@ -1,4 +1,3 @@
-from evolution.generation import Generation, Group
 
 class Logger:
     def __init__(self):

@@ -2,7 +2,8 @@ from abc import ABCMeta
 
 class PhenotypesHandler:
     '''
-    General class that should be (for convenience) inherited
+    General class that should be (for convenience) inherited by other custom handlers.
+    Custom handler that inherits it has to implement 'run_all_phenotypes' method.
     '''
     def __init__(self, phenotypes):
         self._input = input

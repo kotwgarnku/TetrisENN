@@ -2,8 +2,10 @@ import math
 import random
 
 from evolution.genome import Genome
+from evolution.connection_gene import ConnectionGene
 from evolution.phenotype_handler import PhenotypesHandler
 from nn.neuralnetwork import NeuralNetwork
+from evolution.logger import Logger
 
 
 class Generation:
@@ -188,7 +190,6 @@ class Generation:
         for group in groups_to_remove:
             del offspring_count[group.id]
 
-
     def get_offsprings_from_group(self, group_key, group_offspring_amount, left_genomes):
         group_to_reproduce = self.groups[group_key]
         parents = group_to_reproduce.get_parents(self.r_factor)
@@ -261,6 +262,60 @@ class Generation:
     def get_unique_generation_id():
         Generation._GENERATION_ID += 1
         return Generation._GENERATION_ID - 1
+
+    @staticmethod
+    def create_starting_generation(input_size, output_size, starting_groups_count, phenotype_handler, mutation_coefficients=None, compatibility_coefficients=None,
+                 compatibility_threshold=6.0, population_size=100, logger=None):
+
+        Group._GROUP_ID = 0
+        Generation._GENERATION_ID = 0
+        groups = []
+
+        # Set the ConnectionGene innovation number to desired number
+        for i in range(input_size):
+            for j in range(input_size + 1, input_size + 1 + output_size):
+                ConnectionGene(i + 1, j, enabled=True)
+
+        connection_list = []
+        z = 0
+        for i in range(input_size):
+            for j in range(input_size + 1, input_size + 1 + output_size):
+                connection_list.append([i + 1, j, random.normalvariate(mu=0.0, sigma=1.0), True, z])
+                z += 1
+
+        for i in range(starting_groups_count):
+            group = Group()
+            for j in range(population_size):
+                group.add_genome(Genome(connection_list, input_size, output_size))
+            groups.append(group)
+
+        if not mutation_coefficients:
+            mutation_coefficients = {
+                'add_connection': 0.5,
+                'split_connection': 0.2,
+                'change_weight': 0.8,
+                'new_connection_abs_max_weight': 2.0,
+                'max_weight_mutation': 0.5
+            }
+
+        if not compatibility_coefficients:
+            compatibility_coefficients = {
+                'excess_factor': 1.5,
+                'disjoint_factor': 1.5,
+                'weight_difference_factor': 2.0
+            }
+
+        if not logger:
+            logger = Logger()
+
+        if not phenotype_handler:
+            raise Exception("Custom phenotype handler has to be passed")
+
+        gen = Generation(groups, mutation_coefficients=mutation_coefficients,
+                         compatibility_coefficients=compatibility_coefficients, logger=logger,
+                         phenotype_handler=phenotype_handler)
+
+        return gen
 
 
 class Group:
