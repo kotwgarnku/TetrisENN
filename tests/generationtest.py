@@ -271,5 +271,7 @@ class TestGenerationCase(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestGenerationCase)
-    #second_suite = unittest.TestLoader().loadTestsFromTestCase(TestGroupCase)
+    second_suite = unittest.TestLoader().loadTestsFromTestCase(TestGroupCase)
     unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.TextTestRunner(verbosity=2).run(second_suite)
+
