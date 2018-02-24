@@ -3,8 +3,8 @@ import multiprocessing.managers
 
 import boardUtils
 from bot.gist import TetrisApp
-from evolution.logger import *
 from evolution.phenotype_handler import PhenotypesHandler
+from evolution.generation import Generation
 
 
 class TetrisPhenotypesHandler(PhenotypesHandler):
