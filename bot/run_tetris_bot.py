@@ -1,26 +1,8 @@
 from evolution.generation import *
-from evolution.connection_gene import *
 from evolution.logger import *
 from bot.tetris_phenotype_handler import TetrisPhenotypesHandler
 
-def create_generation():
-    Group._GROUP_ID = 0
-    Generation._GENERATION_ID = 0
-    species = Group()
-    for i in range(231):
-        for j in range(232, 236):
-            ConnectionGene(i + 1, j, enabled=True)
-
-    connection_list = []
-    z = 0
-    for i in range(231):
-        for j in range(232, 236):
-            connection_list.append([i + 1, j, random.normalvariate(mu=0.0, sigma=1.0), True, z])
-            z += 1
-
-    for i in range(20):
-        species.add_genome(Genome(connection_list, 231, 4))
-
+if __name__ == '__main__':
     mutation_coefficients = {
         'add_connection': 0.5,
         'split_connection': 0.2,
@@ -34,13 +16,8 @@ def create_generation():
         'weight_difference_factor': 2.0
     }
     log = Logger()
-    gen = Generation([species], mutation_coefficients=mutation_coefficients,
-                     compatibility_coefficients=compatibility_coefficients, logger=log, phenotype_handler=TetrisPhenotypesHandler)
 
-    return gen
-
-if __name__ == '__main__':
-    gen = create_generation()
+    gen = Generation.create_starting_generation(231, 4, 10, TetrisPhenotypesHandler, mutation_coefficients, compatibility_coefficients, population_size=40)
     for i in range(50):
         print(i)
         gen = gen.create_new_generation()

@@ -283,9 +283,12 @@ class Generation:
                 connection_list.append([i + 1, j, random.normalvariate(mu=0.0, sigma=1.0), True, z])
                 z += 1
 
+        if(starting_groups_count > population_size):
+            starting_groups_count = population_size
+
         for i in range(starting_groups_count):
             group = Group()
-            for j in range(population_size):
+            for j in range(math.ceil(population_size/starting_groups_count)):
                 group.add_genome(Genome(connection_list, input_size, output_size))
             groups.append(group)
 
