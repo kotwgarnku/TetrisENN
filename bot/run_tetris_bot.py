@@ -17,7 +17,7 @@ if __name__ == '__main__':
     }
     log = Logger()
 
-    gen = Generation.create_starting_generation(231, 4, 10, TetrisPhenotypesHandler, mutation_coefficients, compatibility_coefficients, population_size=40)
+    gen = Generation.create_starting_generation(232, 4, 10, TetrisPhenotypesHandler, mutation_coefficients, compatibility_coefficients, population_size=60)
     for i in range(50):
         print(i)
         gen = gen.create_new_generation()
