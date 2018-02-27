@@ -54,15 +54,15 @@ class TetrisPhenotypesHandler(PhenotypesHandler):
             if (score == 'quit'):
                 break
             else:
-                best_move = boardUtils.best_move(current_stone, board)
                 nn_input = []
-                for row in best_move[2]:
-                    for block in row:
-                        nn_input.append(block)
+                # for row in board:
+                #     for block in row:
+                #         nn_input.append(block)
 
-                #current_stone = boardUtils.get_stone_number(current_stone)
-                nn_input.append(best_move[0])
-                nn_input.append(best_move[1])
+                current_stone = boardUtils.get_stone_number(current_stone)
+                nn_input.append(current_stone)
+                next_stone = boardUtils.get_stone_number(next_stone)
+                nn_input.append(next_stone)
 
                 if (len(nn_input) != nn._input_size):
                     raise ("Input to the network has wrong size")
@@ -75,6 +75,7 @@ class TetrisPhenotypesHandler(PhenotypesHandler):
                 max_y = max(y)
                 if (y.index(max_y) == 0):
                     neural_network_connection.send('w')
+                    print("KLIKNIETO W")
                 elif (y.index(max_y) == 1):
                     neural_network_connection.send('a')
                 elif (y.index(max_y) == 2):
