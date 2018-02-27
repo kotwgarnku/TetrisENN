@@ -1,6 +1,9 @@
 from evolution.generation import *
 from evolution.logger import *
 from bot.tetris_phenotype_handler import TetrisPhenotypesHandler
+from evolution.genome_serialization import genome_to_json
+import matplotlib.pyplot as plt
+
 
 if __name__ == '__main__':
     mutation_coefficients = {
@@ -17,8 +20,40 @@ if __name__ == '__main__':
     }
     log = Logger()
 
-    gen = Generation.create_starting_generation(232, 4, 10, TetrisPhenotypesHandler, mutation_coefficients, compatibility_coefficients, population_size=60)
-    for i in range(50):
+    gen = Generation.create_starting_generation(232, 4, 10, TetrisPhenotypesHandler, mutation_coefficients, compatibility_coefficients, population_size=100)
+    for i in range(4):
         print(i)
         gen = gen.create_new_generation()
         i += 1
+    best_genome = gen.best_genome
+
+    groups_count = []
+    for generation_log in gen.logger.log.values():
+        groups_count.append(len(generation_log.groups_log))
+
+    plt.plot(list(gen.logger.log.keys()), groups_count)
+    plt.xlabel("Generation")
+    plt.ylabel("Number of groups")
+    plt.title("Groups amount change over evolution")
+    plt.savefig("plot of gen count_tetris")
+    plt.clf()
+
+    last_gen_groups_fitness = []
+    for fit in gen.logger.log[gen.id - 1].groups_fitness_scores_log.values():
+        last_gen_groups_fitness.append(fit[0][2])
+    plt.plot(list(gen.logger.log[gen.id - 1].groups_log.keys()), last_gen_groups_fitness, 'ro')
+    plt.xlabel("Group")
+    plt.ylabel("Group adjusted fitness")
+    plt.title("Adjusted fitness of groups in last generation")
+    plt.savefig("plot of last gen fitness_tetris")
+    plt.clf()
+
+    plt.plot(list(Generation.best_fitnesses.keys()), list(Generation.best_fitnesses.values()))
+    plt.xlabel("Generation")
+    plt.ylabel("Fitness score")
+    plt.title("Fitness score progression")
+    plt.savefig("plot of fitness_tetris")
+
+    f = open('best_genome', mode='w')
+    f.write(genome_to_json(best_genome))
+    f.close()
