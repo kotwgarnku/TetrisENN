@@ -47,7 +47,7 @@ cell_size =	18
 cols =		10
 rows =		22
 maxfps = 	30
-DROP_TIME = 20
+DROP_TIME = 500
 
 colors = [
 (0,   0,   0  ),

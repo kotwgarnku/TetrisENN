@@ -3,7 +3,7 @@ from evolution.logger import *
 from bot.tetris_phenotype_handler import TetrisPhenotypesHandler
 from evolution.genome_serialization import genome_to_json
 import matplotlib.pyplot as plt
-
+import time
 
 if __name__ == '__main__':
     mutation_coefficients = {
@@ -13,6 +13,7 @@ if __name__ == '__main__':
         'new_connection_abs_max_weight': 2.0,
         'max_weight_mutation': 0.5
     }
+
     compatibility_coefficients = {
         'excess_factor': 1.5,
         'disjoint_factor': 1.5,
@@ -20,9 +21,10 @@ if __name__ == '__main__':
     }
     log = Logger()
 
-    gen = Generation.create_starting_generation(2, 4, 10, TetrisPhenotypesHandler, mutation_coefficients, compatibility_coefficients, population_size=2)
+    gen = Generation.create_starting_generation(10, 4, 1, TetrisPhenotypesHandler, mutation_coefficients, compatibility_coefficients, population_size=1)
     for i in range(4):
         print(i)
+        time.sleep(5)
         gen = gen.create_new_generation()
         i += 1
     best_genome = gen.best_genome

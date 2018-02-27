@@ -59,12 +59,13 @@ class TetrisPhenotypesHandler(PhenotypesHandler):
                 #     for block in row:
                 #         nn_input.append(block)
 
-                current_stone = boardUtils.get_stone_number(current_stone)
-                nn_input.append(current_stone)
-                next_stone = boardUtils.get_stone_number(next_stone)
-                nn_input.append(next_stone)
+                columns_heights = boardUtils.get_columns_heights(board)
+
+                for column_height in columns_heights:
+                    nn_input.append(column_height)
 
                 if (len(nn_input) != nn._input_size):
+                    neural_network_connection.close()
                     raise ("Input to the network has wrong size")
 
                 y = nn.forward(nn_input)
@@ -75,7 +76,6 @@ class TetrisPhenotypesHandler(PhenotypesHandler):
                 max_y = max(y)
                 if (y.index(max_y) == 0):
                     neural_network_connection.send('w')
-                    print("KLIKNIETO W")
                 elif (y.index(max_y) == 1):
                     neural_network_connection.send('a')
                 elif (y.index(max_y) == 2):
@@ -83,15 +83,25 @@ class TetrisPhenotypesHandler(PhenotypesHandler):
                 elif (y.index(max_y) == 3):
                     neural_network_connection.send('d')
 
-                num_gaps = boardUtils.num_gaps(board)
-                num_holes = boardUtils.num_holes(board)
-                num_blocks_above = boardUtils.num_blocks_above_holes(board)
-
-                fitnesses[ind] = max((1000 + 1000 * score - 5 * num_gaps - 10 * num_holes - 4 * num_blocks_above),
-                                     1)
-                print("Score:{} ; num_gaps: {} ; num_holes: {} ; num_blocks: {}".format(fitnesses[ind], num_gaps,
-                                                                                        num_holes,
-                                                                                        num_blocks_above))
+                fitnesses[ind] = self.calculate_fitness(score, columns_heights)
+                print("Score:{0}".format(fitnesses[ind]))
 
         neural_network_connection.close()
 
+
+    def calculate_fitness(self, score, columns_heights):
+        differences = self.calculate_max_height_difference(columns_heights)
+        fitness = 11000 + score * 500 - self.calculate_penalty_for_height_differences(differences)
+        return fitness
+
+
+    def calculate_max_height_difference(self, columns_heights):
+        return [abs(a - b) for ind, a in enumerate(columns_heights) for b in columns_heights[ind+1 :]]
+
+
+    def calculate_penalty_for_height_differences(self, differences):
+        # Max penalty is 10164(22^2 * 21)
+        sum = 0
+        for difference in differences:
+            sum += (difference**2)
+        return sum
