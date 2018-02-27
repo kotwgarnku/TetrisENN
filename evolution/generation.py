@@ -316,7 +316,8 @@ class Generation:
 
         gen = Generation(groups, mutation_coefficients=mutation_coefficients,
                          compatibility_coefficients=compatibility_coefficients, logger=logger,
-                         phenotype_handler=phenotype_handler)
+                         phenotype_handler=phenotype_handler, compatibility_threshold=compatibility_threshold,
+                         population_size=population_size)
 
         return gen
 
