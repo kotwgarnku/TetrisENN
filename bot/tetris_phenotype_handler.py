@@ -50,7 +50,7 @@ class TetrisPhenotypesHandler(PhenotypesHandler):
     def create_nn_subprocess(self, neural_network_connection, fitnesses, ind, nn):
 
         while (True):
-            score, board, current_stone, next_stone = neural_network_connection.recv()
+            score, board, current_stone, stone_x, stone_y, next_stone = neural_network_connection.recv()
             if (score == 'quit'):
                 break
             else:
@@ -63,6 +63,10 @@ class TetrisPhenotypesHandler(PhenotypesHandler):
 
                 for column_height in columns_heights:
                     nn_input.append(column_height)
+
+                nn_input.append(boardUtils.get_stone_number(current_stone))
+                nn_input.append(stone_x)
+                nn_input.append(stone_y)
 
                 if (len(nn_input) != nn._input_size):
                     neural_network_connection.close()

@@ -47,7 +47,7 @@ cell_size =	18
 cols =		10
 rows =		22
 maxfps = 	30
-DROP_TIME = 500
+DROP_TIME = 20
 
 colors = [
 (0,   0,   0  ),
@@ -228,7 +228,7 @@ class TetrisApp(object):
 
 		# Send signal that the game is quitting and close connection
 		if self.connection is not None:
-			self.connection.send(('quit', [], [], []))
+			self.connection.send(('quit', None, None, None, None, None))
 		return
 
 	def drop(self, manual):
@@ -300,6 +300,7 @@ class TetrisApp(object):
 				#print("closing socket")
 				#self.sock.close()
 				self.quit()
+				self.connection.close()
 				return
 			else:
 				if self.paused:
@@ -325,13 +326,14 @@ class TetrisApp(object):
 
 			# Send response through pipe and make response based on what the game receives
 			if self.connection is not None:
-				message = (self.score, self.board, self.stone, self.next_stone)
+				message = (self.score, self.board, self.stone, self.stone_x, self.stone_y, self.next_stone)
 				self.connection.send(message)
 
 				response = self.connection.recv()
 
 				if(response == "q"):
 					self.quit()
+					self.connection.close()
 					return
 				elif(response == "a"):
 					key_actions['LEFT']()
