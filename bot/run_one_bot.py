@@ -7,7 +7,7 @@ if __name__ == '__main__':
     try:
         f = open('best_genome')
         genome = genome_from_json(f.read())
-        bot.gist.DROP_TIME = 300
+        bot.gist.DROP_TIME = 20
         TetrisPhenotypesHandler([NeuralNetwork(genome)]).run_all_phenotypes()
         bot.gist.DROP_TIME = 20
 

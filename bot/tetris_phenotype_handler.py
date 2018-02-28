@@ -25,13 +25,16 @@ class TetrisPhenotypesHandler(PhenotypesHandler):
                                                      args=(neural_network_connection, fitnesses, ind, nn))
             nn_subprocesses.append(neural_network)
 
-        for game, nn in zip(games_subprocesses, nn_subprocesses):
-            game.start()
-            nn.start()
+            if ind % 6 == 0 or ind == len(self._neural_networks) - 1:
+                for game, nn in zip(games_subprocesses, nn_subprocesses):
+                    game.start()
+                    nn.start()
 
-        for game, nn in zip(games_subprocesses, nn_subprocesses):
-            game.join()
-            nn.join()
+                for game, nn in zip(games_subprocesses, nn_subprocesses):
+                    game.join()
+                    nn.join()
+                games_subprocesses.clear()
+                nn_subprocesses.clear()
 
         if Generation.best_genome is None:
             Generation.best_genome = self._neural_networks[0]._genome
