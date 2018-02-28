@@ -22,7 +22,9 @@ if __name__ == '__main__':
     }
 
     log = Logger()
-    gen = Generation.create_starting_generation(13, 4, 4, TetrisPhenotypesHandler, mutation_coefficients, compatibility_coefficients, population_size=50, logger=log)
+    gen = Generation.create_starting_generation(13, 4, 4, TetrisPhenotypesHandler, mutation_coefficients,
+                                                compatibility_coefficients, population_size=60, logger=log,
+                                                compatibility_threshold=0.12)
     for i in range(3):
         print(i)
         time.sleep(5)

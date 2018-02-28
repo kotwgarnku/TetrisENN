@@ -119,7 +119,8 @@ def new_board():
 
 class TetrisApp(object):
 	def __init__(self, connection = None):
-		pygame.init()
+		pygame.font.init()
+		pygame.display.init()
 		pygame.key.set_repeat(250,25)
 
 		# IPC stuff
