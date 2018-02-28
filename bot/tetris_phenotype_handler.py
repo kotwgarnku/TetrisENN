@@ -40,7 +40,8 @@ class TetrisPhenotypesHandler(PhenotypesHandler):
             nn._genome.fitness = fitnesses[ind]
             if fitnesses[ind] > Generation.best_genome.fitness:
                 Generation.best_genome = nn._genome
-                Generation.best_fitnesses[Generation._GENERATION_ID - 1] = fitnesses[ind]
+
+        Generation.best_fitnesses[Generation._GENERATION_ID - 1] = Generation.best_genome.fitness
 
     def create_tetris_subprocess(self, connection):
         game = TetrisApp(connection)
@@ -88,7 +89,6 @@ class TetrisPhenotypesHandler(PhenotypesHandler):
                     neural_network_connection.send('d')
 
                 fitnesses[ind] = self.calculate_fitness(score, columns_heights)
-                print("Score:{0}".format(fitnesses[ind]))
 
         neural_network_connection.close()
 

@@ -19,38 +19,47 @@ if __name__ == '__main__':
         'disjoint_factor': 1.5,
         'weight_difference_factor': 2.0
     }
-    log = Logger()
 
-    gen = Generation.create_starting_generation(13, 4, 8, TetrisPhenotypesHandler, mutation_coefficients, compatibility_coefficients, population_size=60)
-    for i in range(15):
+    log = Logger()
+    gen = Generation.create_starting_generation(13, 4, 1, TetrisPhenotypesHandler, mutation_coefficients, compatibility_coefficients, population_size=1, logger=log)
+    for i in range(3):
         print(i)
         time.sleep(5)
         gen = gen.create_new_generation()
         i += 1
     best_genome = gen.best_genome
 
+    print("Real logger = " + str(id(log)))
+
     groups_count = []
     for generation_log in gen.logger.log.values():
         groups_count.append(len(generation_log.groups_log))
 
-    plt.plot(list(gen.logger.log.keys()), groups_count)
+    plt.scatter(list(gen.logger.log.keys()), groups_count)
     plt.xlabel("Generation")
     plt.ylabel("Number of groups")
     plt.title("Groups amount change over evolution")
     plt.savefig("plot of gen count_tetris")
     plt.clf()
+    plt.cla()
 
     last_gen_groups_fitness = []
     for fit in gen.logger.log[gen.id - 1].groups_fitness_scores_log.values():
         last_gen_groups_fitness.append(fit[0][2])
-    plt.plot(list(gen.logger.log[gen.id - 1].groups_log.keys()), last_gen_groups_fitness, 'ro')
+    x = list(gen.logger.log[gen.id].groups_log.keys())
+    y = last_gen_groups_fitness
+    plt.plot(x, y, 'ro')
     plt.xlabel("Group")
     plt.ylabel("Group adjusted fitness")
     plt.title("Adjusted fitness of groups in last generation")
     plt.savefig("plot of last gen fitness_tetris")
     plt.clf()
+    plt.cla()
 
-    plt.plot(list(Generation.best_fitnesses.keys()), list(Generation.best_fitnesses.values()))
+
+    x = list(Generation.best_fitnesses.keys())
+    y = list(Generation.best_fitnesses.values())
+    plt.plot(x, y, 'ro')
     plt.xlabel("Generation")
     plt.ylabel("Fitness score")
     plt.title("Fitness score progression")

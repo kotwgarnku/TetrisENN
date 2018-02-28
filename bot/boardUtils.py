@@ -14,11 +14,9 @@ Move = namedtuple('Move', ['x_pos', 'rotation', 'result'])
 def get_columns_heights(board):
     columns_heights = [None] * len(board[0])
     board_height = len(board) - 1
-    print("Board height: " + str(board_height))
     for row_number, row in enumerate(board):
         for column, cell in enumerate(row):
             if _is_block(cell):
-                print("row number: " + str(row_number))
                 if not columns_heights[column]:
                     columns_heights[column] = board_height - row_number
     return columns_heights
