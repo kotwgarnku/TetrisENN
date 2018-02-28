@@ -8,10 +8,10 @@ import time
 
 if __name__ == '__main__':
     mutation_coefficients = {
-        'add_connection': 0.5,
+        'add_connection': 0.3,
         'split_connection': 0.4,
         'change_weight': 0.8,
-        'new_connection_abs_max_weight': 2.0,
+        'new_connection_abs_max_weight': 1.5,
         'max_weight_mutation': 0.5
     }
 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     gen = Generation.create_starting_generation(13, 4, 4, TetrisPhenotypesHandler, mutation_coefficients,
                                                 compatibility_coefficients, population_size=60, logger=log,
                                                 compatibility_threshold=0.12)
-    for i in range(3):
+    for i in range(30):
         print(i)
         time.sleep(5)
         gen = gen.create_new_generation()
