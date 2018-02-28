@@ -1,5 +1,6 @@
 from evolution.generation import *
 from evolution.logger import *
+from evolution.logger_visualiser import LoggerVisualiser
 from bot.tetris_phenotype_handler import TetrisPhenotypesHandler
 from evolution.genome_serialization import genome_to_json
 import matplotlib.pyplot as plt
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     }
 
     log = Logger()
-    gen = Generation.create_starting_generation(13, 4, 1, TetrisPhenotypesHandler, mutation_coefficients, compatibility_coefficients, population_size=1, logger=log)
+    gen = Generation.create_starting_generation(13, 4, 4, TetrisPhenotypesHandler, mutation_coefficients, compatibility_coefficients, population_size=50, logger=log)
     for i in range(3):
         print(i)
         time.sleep(5)
@@ -29,41 +30,11 @@ if __name__ == '__main__':
         i += 1
     best_genome = gen.best_genome
 
-    print("Real logger = " + str(id(log)))
-
-    groups_count = []
-    for generation_log in gen.logger.log.values():
-        groups_count.append(len(generation_log.groups_log))
-
-    plt.scatter(list(gen.logger.log.keys()), groups_count)
-    plt.xlabel("Generation")
-    plt.ylabel("Number of groups")
-    plt.title("Groups amount change over evolution")
-    plt.savefig("plot of gen count_tetris")
-    plt.clf()
-    plt.cla()
-
-    last_gen_groups_fitness = []
-    for fit in gen.logger.log[gen.id - 1].groups_fitness_scores_log.values():
-        last_gen_groups_fitness.append(fit[0][2])
-    x = list(gen.logger.log[gen.id].groups_log.keys())
-    y = last_gen_groups_fitness
-    plt.plot(x, y, 'ro')
-    plt.xlabel("Group")
-    plt.ylabel("Group adjusted fitness")
-    plt.title("Adjusted fitness of groups in last generation")
-    plt.savefig("plot of last gen fitness_tetris")
-    plt.clf()
-    plt.cla()
-
-
-    x = list(Generation.best_fitnesses.keys())
-    y = list(Generation.best_fitnesses.values())
-    plt.plot(x, y, 'ro')
-    plt.xlabel("Generation")
-    plt.ylabel("Fitness score")
-    plt.title("Fitness score progression")
-    plt.savefig("plot of fitness_tetris")
+    # Remove last generation log(it was created when second to last generation returned new Generation object)
+    del log.log[max(log.log.keys())]
+    LoggerVisualiser.plot_max_generation_fitness_scores(log)
+    LoggerVisualiser.plot_groups_number(log)
+    LoggerVisualiser.plot_last_generation_adjusted_fitness_scores(log)
 
     f = open('best_genome', mode='w')
     f.write(genome_to_json(best_genome))

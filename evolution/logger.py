@@ -3,6 +3,9 @@ class Logger:
     def __init__(self):
         self.log = {}
 
+    def get_fitness_scores(self):
+        return {generation: log.phenotypes_fitness_scores for generation, log in zip(self.log.keys(), self.log.values())}
+
     def log_coefficients(self, id, mutation_coefficients, compatibility_coefficients,
                                 compatibility_threshold, r_factor, population_size):
         self._check_if_record_exists(id)

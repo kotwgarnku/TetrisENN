@@ -71,13 +71,13 @@ class Generation:
         self.population_size = population_size
 
     def create_new_generation(self):
+        print("Gen " + str(self.id))
         self.create_phenotypes()
         if self.logger is not None:
             self.logger.log_phenotypes(self.id, self.phenotypes)
         self.run_phenotypes()
 
         if self.logger is not None:
-            print("Logger to log fitnesses to: " + str(id(self.logger)))
             self.logger.log_phenotypes_fitness_scores(self.id)
         phenotypes_fitness = self.get_phenotypes_fitness_scores()
         self.update_genomes_fitness_scores(phenotypes_fitness)
