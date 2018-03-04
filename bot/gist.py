@@ -301,7 +301,8 @@ class TetrisApp(object):
 				#print("closing socket")
 				#self.sock.close()
 				self.quit()
-				self.connection.close()
+				if not self.connection:
+					self.connection.close()
 				return
 			else:
 				if self.paused:

@@ -160,6 +160,7 @@ class Generation:
     def _remove_stale_groups(self, offspring_count):
 
         # set different threshold based on generation
+        #TODO lol xd
         if(len(self.groups) < 10):
             return
         if self.id < 5:
@@ -171,7 +172,7 @@ class Generation:
         if self.id < 120:
             val = 0.002
         if self.id < 200:
-            val = 0.001
+            val = 0.003
         else:
             val = 0.0005
 

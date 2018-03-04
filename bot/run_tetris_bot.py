@@ -23,14 +23,18 @@ if __name__ == '__main__':
 
     log = Logger()
     gen = Generation.create_starting_generation(13, 4, 4, TetrisPhenotypesHandler, mutation_coefficients,
-                                                compatibility_coefficients, population_size=60, logger=log,
+                                                compatibility_coefficients, population_size=100, logger=log,
                                                 compatibility_threshold=0.12)
-    for i in range(30):
+    for i in range(250):
         print(i)
         time.sleep(5)
         gen = gen.create_new_generation()
         i += 1
-    best_genome = gen.best_genome
+
+        best_genome = gen.best_genome
+        f = open('best_genome', mode='w')
+        f.write(genome_to_json(best_genome))
+        f.close()
 
     # Remove last generation log(it was created when second to last generation returned new Generation object)
     del log.log[max(log.log.keys())]
