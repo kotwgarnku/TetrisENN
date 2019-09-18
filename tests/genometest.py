@@ -228,6 +228,48 @@ class TestGenomeCase(unittest.TestCase):
         self.assertEqual(genome.input_node_ids, genome_from_json.input_node_ids)
         self.assertEqual(genome.output_node_ids, genome_from_json.output_node_ids)
 
+    def test_genome_cloning(self):
+        genome = Genome([[1, 3, 0, True], [1, 4, 22, True], [2, 3, 3, True], [2, 4, 70, False]], 2, 1)
+        genome2 = Genome(genome_to_clone=genome)
+        nodes = genome2.get_nodes()
+        self.assertEqual(nodes[0].node_type, 'input')
+        self.assertEqual(nodes[0].node_id, 1)
+        self.assertEqual(nodes[1].node_type, 'input')
+        self.assertEqual(nodes[1].node_id, 2)
+        self.assertEqual(nodes[2].node_type, 'hidden')
+        self.assertEqual(nodes[2].node_id, 3)
+        self.assertEqual(nodes[3].node_type, 'output')
+        self.assertEqual(nodes[3].node_id, 4)
+
+        connections=genome2.get_connections()
+        self.assertEqual(connections[0][0], 1)
+        self.assertEqual(connections[0][1], 3)
+        self.assertEqual(connections[0][2], 0)
+        self.assertEqual(connections[0][3], True)
+        self.assertEqual(connections[1][0], 1)
+        self.assertEqual(connections[1][1], 4)
+        self.assertEqual(connections[1][2], 22)
+        self.assertEqual(connections[1][3], True)
+        self.assertEqual(connections[2][0], 2)
+        self.assertEqual(connections[2][1], 3)
+        self.assertEqual(connections[2][2], 3)
+        self.assertEqual(connections[2][3], True)
+        self.assertEqual(connections[3][0], 2)
+        self.assertEqual(connections[3][1], 4)
+        self.assertEqual(connections[3][2], 70)
+        self.assertEqual(connections[3][3], False)
+
+        self.assertEqual(genome2.input_size, 2)
+        self.assertEqual(genome2.output_size, 1)
+
+        connections = list(genome.connection_genes.values())
+        connections2 = list(genome2.connection_genes.values())
+        self.assertEqual(connections[0].innovation_number, connections2[0].innovation_number)
+        self.assertEqual(connections[1].innovation_number, connections2[1].innovation_number)
+        self.assertEqual(connections[2].innovation_number, connections2[2].innovation_number)
+        self.assertEqual(connections[3].innovation_number, connections2[3].innovation_number)
+
+
 if __name__ == '__main__':
     firstSuite = unittest.TestLoader().loadTestsFromTestCase(TestGenomeCase)
     secondSuite = unittest.TestLoader().loadTestsFromTestCase(TestConnectionGeneCase)
